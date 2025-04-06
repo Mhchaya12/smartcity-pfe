@@ -5,6 +5,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/Alerts.css";
 
+// Enum supposée pour AlertType
+const AlertType = {
+  INFO: "INFO",
+  WARNING: "WARNING",
+  CRITICAL: "CRITICAL",
+  NOTICE: "NOTICE",
+  SUCCESS: "SUCCESS",
+};
+
 const Alerts = ({
   historiquesActifs,
   historiquesTraites,
@@ -15,44 +24,63 @@ const Alerts = ({
   const [activeAlerts, setActiveAlerts] = useState([
     {
       id: 1,
-      title: "Consommation d'énergie dépassée dans la Rue de Marseille",
-      time: "14/03 23:23",
-      severity: "orange",
+      timestamp: new Date("2025-03-14T23:23:00"),
+      type: AlertType.WARNING,
+      message: "Consommation d'énergie dépassée",
+      location: "Rue de Marseille",
+      sensorId: "",
       resolved: false,
     },
     {
       id: 2,
-      title: "Niveau de déchets critique dans l'Avenue Mohammed-V",
-      time: "14/03 22:53",
-      severity: "red",
+      timestamp: new Date("2025-03-14T22:53:00"),
+      type: AlertType.CRITICAL,
+      message: "Niveau de déchets critique",
+      location: "Avenue Mohammed-V",
+      sensorId: "",
       resolved: false,
     },
     {
       id: 3,
-      title: "Flux de circulation élevé sur l'Avenue Centrale",
-      time: "14/03 21:38",
-      severity: "yellow",
+      timestamp: new Date("2025-03-14T21:38:00"),
+      type: AlertType.INFO,
+      message: "Flux de circulation élevé",
+      location: "Avenue Centrale",
+      sensorId: "",
       resolved: false,
     },
     {
       id: 4,
-      title: "Sécurité en dessous des normes dans l'Avenue Habib-Bourguiba",
-      time: "14/03 20:38",
-      severity: "blue",
+      timestamp: new Date("2025-03-14T20:38:00"),
+      type: AlertType.NOTICE,
+      message: "Sécurité en dessous des normes",
+      location: "Avenue Habib-Bourguiba",
+      sensorId: "",
       resolved: false,
     },
     {
       id: 5,
-      title: "Fuite d'eau détectée sur le réseau principal",
-      time: "14/03 20:08",
-      severity: "orange",
+      timestamp: new Date("2025-03-14T20:08:00"),
+      type: AlertType.WARNING,
+      message: "Fuite d'eau détectée",
+      location: "Réseau principal",
+      sensorId: "",
       resolved: false,
     },
   ]);
 
   const [resolvedAlerts, setResolvedAlerts] = useState([
-    { id: 6, title: "Panne résolue dans Zone 1", time: "14/03 19:45", severity: "green", resolved: true },
+    {
+      id: 6,
+      timestamp: new Date("2025-03-14T19:45:00"),
+      type: AlertType.SUCCESS,
+      message: "Panne résolue",
+      location: "Zone 1",
+      sensorId: "",
+      resolved: true,
+    },
   ]);
+
   const [activeTab, setActiveTab] = useState('Actives');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -67,11 +95,11 @@ const Alerts = ({
 
   // Filter alerts based on search term
   const filteredActiveAlerts = activeAlerts.filter((alert) =>
-    alert.title.toLowerCase().includes(searchTerm.toLowerCase())
+    `${alert.message} ${alert.location}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredResolvedAlerts = resolvedAlerts.filter((alert) =>
-    alert.title.toLowerCase().includes(searchTerm.toLowerCase())
+    `${alert.message} ${alert.location}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -113,12 +141,12 @@ const Alerts = ({
             <p className="subtitle">Alertes requérant votre attention</p>
             <div className="alert-list">
               {filteredActiveAlerts.map((alert) => (
-                <div key={alert.id} className={`alert-card ${alert.severity}`}>
+                <div key={alert.id} className={`alert-card ${alert.type.toLowerCase()}`}>
                   <div className="alert-content">
-                    <div className={`alert-indicator ${alert.severity}`}></div>
+                    <div className={`alert-indicator ${alert.type.toLowerCase()}`}></div>
                     <div className="alert-details">
-                      <p className="alert-title">{alert.title}</p>
-                      <p className="alert-time">{alert.time}</p>
+                      <p className="alert-title">{alert.message} - {alert.location}</p>
+                      <p className="alert-time">{alert.timestamp.toLocaleString()}</p>
                     </div>
                   </div>
                   <button className="resolve-button" onClick={() => handleResolve(alert.id)}>
@@ -136,12 +164,12 @@ const Alerts = ({
             <p className="subtitle">Alertes déjà traitées</p>
             <div className="alert-list">
               {filteredResolvedAlerts.map((alert) => (
-                <div key={alert.id} className={`alert-card resolved ${alert.severity}`}>
+                <div key={alert.id} className={`alert-card resolved ${alert.type.toLowerCase()}`}>
                   <div className="alert-content">
-                    <div className={`alert-indicator ${alert.severity}`}></div>
+                    <div className={`alert-indicator ${alert.type.toLowerCase()}`}></div>
                     <div className="alert-details">
-                      <p className="alert-title">{alert.title}</p>
-                      <p className="alert-time">{alert.time}</p>
+                      <p className="alert-title">{alert.message} - {alert.location}</p>
+                      <p className="alert-time">{alert.timestamp.toLocaleString()}</p>
                     </div>
                   </div>
                   <div className="resolved-check">✔ Résolu</div>

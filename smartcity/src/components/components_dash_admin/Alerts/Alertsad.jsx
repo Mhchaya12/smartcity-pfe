@@ -4,6 +4,14 @@ import { faExclamationCircle, faCheckCircle, faTrash } from '@fortawesome/free-s
 import { Link } from 'react-router-dom';
 import './Alerts.css';
 
+// Supposons une enum AlertType pour type
+const AlertType = {
+  INFO: "INFO",
+  WARNING: "WARNING",
+  CRITICAL: "CRITICAL",
+  NOTICE: "NOTICE",
+};
+
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,36 +27,42 @@ const Alerts = () => {
       const initialActiveAlerts = [
         {
           id: 1,
-          title: "Consommation d'énergie dépassée dans la Rue de Marseille",
-          time: "14/03 23:23",
-          severity: "orange",
+          timestamp: new Date("2025-03-14T23:23:00"),
+          type: AlertType.WARNING,
+          message: "Consommation d'énergie dépassée",
+          location: "Rue de Marseille",
+          sensorId: "",
           resolved: false,
         },
         {
           id: 2,
-          title: "Niveau de déchets critique dans l'Avenue Mohammed-V",
-          time: "14/03 22:53",
-          severity: "red",
+          timestamp: new Date("2025-03-14T22:53:00"),
+          type: AlertType.CRITICAL,
+          message: "Niveau de déchets critique",
+          location: "Avenue Mohammed-V",
+          sensorId: "",
           resolved: false,
         },
         {
           id: 3,
-          title: "Flux de circulation élevé sur l'Avenue Centrale",
-          time: "14/03 21:38",
-          severity: "yellow",
+          timestamp: new Date("2025-03-14T21:38:00"),
+          type: AlertType.INFO,
+          message: "Flux de circulation élevé",
+          location: "Avenue Centrale",
+          sensorId: "",
           resolved: false,
         },
         {
           id: 4,
-          title: "Sécurité en dessous des normes dans l'Avenue Habib-Bourguiba",
-          time: "14/03 20:38",
-          severity: "blue",
+          timestamp: new Date("2025-03-14T20:38:00"),
+          type: AlertType.NOTICE,
+          message: "Sécurité en dessous des normes",
+          location: "Avenue Habib-Bourguiba",
+          sensorId: "",
           resolved: false,
         },
-
       ];
 
-      // Simulate network delay
       setTimeout(() => {
         setAlerts(initialActiveAlerts);
         setError(null);
@@ -68,7 +82,7 @@ const Alerts = () => {
   };
 
   const handleDeleteAlert = (e, id) => {
-    e.stopPropagation(); // Prevents triggering handleToggleResolved
+    e.stopPropagation();
     setAlerts(alerts.filter((alert) => alert.id !== id));
   };
 
@@ -102,14 +116,16 @@ const Alerts = () => {
           alerts.map((alert) => (
             <div
               key={alert.id}
-              className={`alert-item ${alert.severity} ${alert.resolved ? 'resolved' : ''}`}
+              className={`alert-item ${alert.type.toLowerCase()} ${alert.resolved ? 'resolved' : ''}`}
               onClick={() => handleToggleResolved(alert.id)}
             >
               <FontAwesomeIcon
                 icon={alert.resolved ? faCheckCircle : faExclamationCircle}
                 className="alert-icon"
               />
-              <span className="alert-message">{alert.title}</span>
+              <span className="alert-message">
+                {alert.message} - {alert.location} ({alert.timestamp.toLocaleString()})
+              </span>
               {alert.resolved && <span className="resolved-tag">Résolue</span>}
               <button
                 className="delete-btn"

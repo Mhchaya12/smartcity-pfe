@@ -16,12 +16,11 @@ export const Alert = {
 
 export const Sensor = {
   id: '',
-  name: '',
+  name: '', 
   type: '',
   location: '',
   status: '',
   lastReading: null,
-  batteryLevel: 100,
   lastMaintenance: null,
   nextMaintenance: null
 };
