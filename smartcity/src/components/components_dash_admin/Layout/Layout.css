@@ -1,0 +1,12 @@
+.app-container {
+    min-height: 90vh;
+    width: 100%;
+    position: relative;
+  }
+  
+  .main-content {
+    flex: 2;
+    margin-left: 250px;
+    padding: 24px;
+  }
+

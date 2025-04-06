@@ -1,0 +1,197 @@
+/* Modern variables */
+:root {
+  --primary: #3a86ff;
+  --secondary: #8338ec;
+  --success: #38b000;
+  --warning: #ffbe0b;
+  --danger: #ff006e;
+  --light: #f8f9fa;
+  --dark: #212529;
+  --gray-100: #f8f9fa;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-400: #ced4da;
+  --gray-500: #adb5bd;
+  --gray-600: #6c757d;
+  --gray-700: #495057;
+  --gray-800: #343a40;
+  --gray-900: #212529;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* Base styles */
+body {
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f7fa;
+  color: var(--gray-800);
+  line-height: 1.6;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Controls section */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+/* Search input */
+.controls input[type="text"] {
+  background-color: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  width: 300px;
+  transition: var(--transition);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.controls input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.25);
+}
+
+/* Button */
+.controls button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--box-shadow);
+}
+
+.controls button:hover {
+  background-color: #2a75e8;
+  transform: translateY(-2px);
+}
+
+.controls button:active {
+  transform: translateY(0);
+}
+
+/* Historique view */
+.historique-view {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 1.5rem;
+}
+
+.historique-view h2 {
+  color: var(--gray-800);
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 1rem;
+}
+
+thead {
+  background-color: var(--gray-100);
+}
+
+th {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  border-bottom: 2px solid var(--gray-300);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  color: var(--gray-800);
+  font-size: 0.95rem;
+}
+
+tbody tr {
+  transition: var(--transition);
+}
+
+tbody tr:hover {
+  background-color: var(--gray-100);
+}
+
+/* Status colors */
+td:last-child {
+  font-weight: 500;
+}
+
+tr td:last-child:contains("Active"), 
+tr td:last-child:contains("Actif") {
+  color: var(--success);
+}
+
+tr td:last-child:contains("Warning"),
+tr td:last-child:contains("Attention") {
+  color: var(--warning);
+}
+
+tr td:last-child:contains("Error"),
+tr td:last-child:contains("Erreur") {
+  color: var(--danger);
+}
+
+tr td:last-child:contains("Offline"),
+tr td:last-child:contains("Hors ligne") {
+  color: var(--gray-600);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .controls input[type="text"] {
+    width: 100%;
+  }
+  
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .historique-view {
+    padding: 1rem;
+  }
+  
+  th, td {
+    padding: 0.75rem;
+  }
+}

@@ -1,0 +1,282 @@
+/* General container styling */
+.settings-container {
+  padding: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+/* Heading and description */
+.settings-container h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.settings-container p {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+/* Button container for save & history buttons */
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px; /* Adds spacing between buttons */
+  margin-bottom: 24px;
+  position: absolute;
+  top: 32px;
+  right: 32px;
+}
+
+/* Save button */
+.save-button {
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.save-button:hover {
+  background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%);
+  transform: translateY(-2px);
+}
+
+.save-button:active {
+  transform: translateY(0);
+}
+
+/* History button */
+.history-button {
+  background: linear-gradient(90deg, #64748b 0%, #94a3b8 100%); /* Grayish gradient */
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.history-button:hover {
+  background: linear-gradient(90deg, #475569 0%, #64748b 100%);
+  transform: translateY(-2px);
+}
+
+.history-button:active {
+  transform: translateY(0);
+}
+
+/* Grid layout */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+/* Card styling */
+.settings-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.settings-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.settings-card p {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-bottom: 20px;
+}
+
+/* Form group styling */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.form-group span {
+  display: block;
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* Slider customization */
+.rc-slider {
+  margin: 10px 0;
+}
+
+.rc-slider-rail {
+  background-color: #e5e7eb;
+}
+
+.rc-slider-track {
+  background-color: #3b82f6;
+}
+
+.rc-slider-handle {
+  border: 2px solid #3b82f6;
+  background-color: #ffffff;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  transition: transform 0.2s ease;
+}
+
+.rc-slider-handle:hover {
+  transform: scale(1.2);
+}
+
+/* Time and select row layouts */
+.time-row,
+.select-row {
+  display: flex;
+  gap: 20px;
+}
+
+.time-row div,
+.select-row div {
+  flex: 1;
+}
+
+.time-picker {
+  width: 100%;
+}
+
+/* MUI component overrides */
+.time-picker input,
+.MuiOutlinedInput-root {
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 14px;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #3b82f6;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Toggle switch styling */
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+/* Modified Switch styles */
+.MuiSwitch-switchBase.Mui-checked {
+  color: #10b981 !important;
+}
+
+.MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+  background-color: #d1fae5 !important;
+  opacity: 1;
+}
+
+.MuiSwitch-thumb {
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.MuiSwitch-track {
+  border-radius: 16px;
+  opacity: 0.3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-container {
+    padding: 20px;
+  }
+
+  .button-container {
+    position: static;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+}
+
+
+
+.history-section {
+  margin-top: 40px;
+  padding: 20px;
+  border-top: 1px solid #ccc;
+}
+
+.history-section h2 {
+  margin-bottom: 20px;
+}
+
+.button-container {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.save-button,
+.history-button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.save-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+}
+
+.history-button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+}
+
+.save-button:hover {
+  background-color: #45a049;
+}
+
+.history-button:hover {
+  background-color: #e0e0e0;
+}

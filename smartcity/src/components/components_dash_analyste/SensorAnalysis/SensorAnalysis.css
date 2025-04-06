@@ -1,0 +1,135 @@
+.sensor-analysis {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sensor-analysis-header {
+  margin-bottom: 15px;
+}
+
+.sensor-analysis-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.sensor-analysis-content {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+}
+
+.chart-container {
+  flex: 0 0 50%;
+  position: relative;
+  height: 250px;
+}
+
+.sensor-stats {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
+  overflow-y: auto;
+  max-height: 250px;
+}
+
+.sensor-stat-card {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sensor-type-label {
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+}
+
+.sensor-count {
+  font-size: 14px;
+  color: #666;
+}
+
+.alert-ratio {
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+.alert-warning {
+  color: #e74c3c;
+  font-weight: 500;
+}
+
+.alert-normal {
+  color: #27ae60;
+  font-weight: 500;
+}
+
+.ratio-percentage {
+  color: #888;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.sensor-analysis-footer {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.status-legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.status-indicator.normal {
+  background-color: #27ae60;
+}
+
+.status-indicator.alert {
+  background-color: #e74c3c;
+}
+
+.status-indicator.critical {
+  background-color: #8e44ad;
+}
+
+@media screen and (max-width: 768px) {
+  .sensor-analysis-content {
+    flex-direction: column;
+  }
+  
+  .chart-container {
+    flex: 0 0 200px;
+  }
+  
+  .sensor-stats {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}

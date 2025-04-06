@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --tech-red: 0 84.2% 60.2%;
+    --tech-yellow: 45 93% 47%;
+    --tech-blue: 221.2 83.2% 53.3%;
+    --tech-green: 142.1 76.2% 36.3%;
+  }
+}
+
+@layer components {
+  .text-tech-red {
+    color: hsl(var(--tech-red));
+  }
+  
+  .text-tech-yellow {
+    color: hsl(var(--tech-yellow));
+  }
+  
+  .text-tech-blue {
+    color: hsl(var(--tech-blue));
+  }
+  
+  .text-tech-green {
+    color: hsl(var(--tech-green));
+  }
+  
+  .bg-tech-red {
+    background-color: hsl(var(--tech-red));
+  }
+  
+  .bg-tech-yellow {
+    background-color: hsl(var(--tech-yellow));
+  }
+  
+  .bg-tech-blue {
+    background-color: hsl(var(--tech-blue));
+  }
+  
+  .bg-tech-green {
+    background-color: hsl(var(--tech-green));
+  }
+  
+  .border-tech-red {
+    border-color: hsl(var(--tech-red));
+  }
+  
+  .border-tech-yellow {
+    border-color: hsl(var(--tech-yellow));
+  }
+  
+  .border-tech-blue {
+    border-color: hsl(var(--tech-blue));
+  }
+  
+  .border-tech-green {
+    border-color: hsl(var(--tech-green));
+  }
+}

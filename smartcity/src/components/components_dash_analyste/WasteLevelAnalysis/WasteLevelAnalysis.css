@@ -1,0 +1,172 @@
+.waste-level-analysis {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.waste-level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.waste-level-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.zone-filter select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  font-size: 14px;
+  color: #555;
+  outline: none;
+  cursor: pointer;
+}
+
+.waste-level-content {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+}
+
+.chart-container {
+  flex: 1;
+  position: relative;
+  height: 250px;
+}
+
+.waste-level-stats {
+  flex: 0 0 40%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 250px;
+}
+
+.waste-stat-card {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 4px solid transparent;
+}
+
+.waste-stat-card.normal {
+  border-left-color: #27ae60;
+}
+
+.waste-stat-card.warning {
+  border-left-color: #f39c12;
+}
+
+.waste-stat-card.critical {
+  border-left-color: #e74c3c;
+}
+
+.waste-zone-label {
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+}
+
+.waste-level-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.level-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.level-fill {
+  height: 100%;
+  border-radius: 4px;
+  background-color: #2ecc71;
+}
+
+.waste-stat-card.warning .level-fill {
+  background-color: #f39c12;
+}
+
+.waste-stat-card.critical .level-fill {
+  background-color: #e74c3c;
+}
+
+.level-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  min-width: 40px;
+  text-align: right;
+}
+
+.waste-status {
+  font-size: 13px;
+  color: #666;
+}
+
+.waste-stat-card.normal .waste-status {
+  color: #27ae60;
+}
+
+.waste-stat-card.warning .waste-status {
+  color: #f39c12;
+}
+
+.waste-stat-card.critical .waste-status {
+  color: #e74c3c;
+}
+
+.waste-level-footer {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.collection-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
+}
+
+.next-collection, .last-update {
+  display: flex;
+  gap: 5px;
+}
+
+.label {
+  color: #888;
+}
+
+.value {
+  font-weight: 500;
+}
+
+@media screen and (max-width: 768px) {
+  .waste-level-content {
+    flex-direction: column;
+  }
+  
+  .chart-container {
+    height: 200px;
+  }
+}
