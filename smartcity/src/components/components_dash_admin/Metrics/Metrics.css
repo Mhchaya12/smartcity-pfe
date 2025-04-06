@@ -111,28 +111,7 @@
   color: #dc3545;
 }
 
-/* Battery indicator styling - positioned at bottom left */
-.battery-indicator {
-  position: absolute;
-  bottom: 12px;
-  left: 16px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-}
 
-.battery-icon {
-  font-size: 12px;
-}
-
-.battery-full { color: #28a745; }
-.battery-half { color: #ffc107; }
-.battery-empty { color: #dc3545; }
-
-.battery-value {
-  font-weight: 600;
-}
 
 /* Responsive adjustments */
 @media (max-width: 992px) {

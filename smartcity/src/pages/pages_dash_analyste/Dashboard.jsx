@@ -13,8 +13,7 @@ const initialSensorData = [
     type: 'Déchets', 
     location: 'Rue Principale', 
     data: 'Niveau: 85%', 
-    status: 'Alerte',
-    batteryPercentage: 75 
+    status: 'Alerte'
   },
   { 
     date: '17 mars 2025, 16:45', 
@@ -22,8 +21,7 @@ const initialSensorData = [
     type: 'Déchets', 
     location: 'Parc Central', 
     data: 'Niveau: 30%', 
-    status: 'Normal',
-    batteryPercentage: 90 
+    status: 'Normal'
   },
   { 
     date: '18 mars 2025, 07:00', 
@@ -31,8 +29,7 @@ const initialSensorData = [
     type: 'Énergie', 
     location: 'Mairie', 
     data: '120 kWh', 
-    status: 'Normal',
-    batteryPercentage: 50 
+    status: 'Normal'
   },
   { 
     date: '17 mars 2025, 14:00', 
@@ -40,8 +37,7 @@ const initialSensorData = [
     type: 'Énergie', 
     location: 'Bibliothèque', 
     data: '250 kWh', 
-    status: 'Alerte',
-    batteryPercentage: 20 
+    status: 'Alerte'
   },
   { 
     date: '18 mars 2025, 09:00', 
@@ -49,8 +45,8 @@ const initialSensorData = [
     type: 'Transport', 
     location: 'Avenue Centrale', 
     data: '450 véhicules/h', 
-    status: 'Normal',
-    batteryPercentage: 80 
+    status: 'Normal'
+
   },
   { 
     date: '17 mars 2025, 17:30', 
@@ -58,8 +54,7 @@ const initialSensorData = [
     type: 'Transport', 
     location: 'Boulevard Ouest', 
     data: '800 véhicules/h', 
-    status: 'Alerte',
-    batteryPercentage: 15 
+    status: 'Alerte'
   },
   { 
     date: '18 mars 2025, 03:15', 
@@ -67,8 +62,7 @@ const initialSensorData = [
     type: 'Sécurité', 
     location: 'Parking', 
     data: 'Mouvement détecté', 
-    status: 'Alerte',
-    batteryPercentage: 10 
+    status: 'Alerte'
   },
   { 
     date: '16 mars 2025, 23:45', 
@@ -76,8 +70,7 @@ const initialSensorData = [
     type: 'Sécurité', 
     location: 'Zone Industrielle', 
     data: 'Activité inhabituelle', 
-    status: 'Alerte critique',
-    batteryPercentage: 5 
+    status: 'Alerte critique'
   },
 ];
 
@@ -214,7 +207,6 @@ const AnalysteDashboard = () => {
                     <th>Type</th>
                     <th>Localisation</th>
                     <th>Données</th>
-                    <th>Batterie (%)</th>
                     <th>Statut</th>
                   </tr>
                 </thead>
@@ -226,9 +218,6 @@ const AnalysteDashboard = () => {
                       <td>{item.type}</td>
                       <td>{item.location}</td>
                       <td>{item.data}</td>
-                      <td className={item.batteryPercentage < 20 ? 'low-battery' : ''}>
-                        {item.batteryPercentage}%
-                      </td>
                       <td>
                         <span className={`status-badge ${item.status.toLowerCase().replace(' ', '-')}`}>
                           {item.status}
@@ -255,14 +244,7 @@ const AnalysteDashboard = () => {
                   <h4>Taux d'anomalies</h4>
                   <p>{Math.round((filteredByType.filter(item => item.status !== 'Normal').length / filteredByType.length) * 100)}%</p>
                 </div>
-                <div className="summary-card">
-                  <h4>Niveau moyen de la batterie</h4>
-                  <p>{Math.round(filteredByType.reduce((sum, item) => sum + item.batteryPercentage, 0) / filteredByType.length)}%</p>
-                </div>
-                <div className="summary-card">
-                  <h4>Capteurs avec batterie faible (20%)</h4>
-                  <p>{filteredByType.filter(item => item.batteryPercentage < 20).length}</p>
-                </div>
+                
               </div>
             </div>
           </div>

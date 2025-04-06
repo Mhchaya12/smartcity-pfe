@@ -45,13 +45,7 @@ const Alerts = () => {
           severity: "blue",
           resolved: false,
         },
-        {
-          id: 5,
-          title: "Fuite d'eau détectée sur le réseau principal",
-          time: "14/03 20:08",
-          severity: "orange",
-          resolved: false,
-        },
+
       ];
 
       // Simulate network delay

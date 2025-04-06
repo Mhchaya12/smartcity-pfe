@@ -30,7 +30,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px; /* Adds spacing between buttons */
-  margin-bottom: 24px;
+  margin-top: 30px;
   position: absolute;
   top: 32px;
   right: 32px;
@@ -220,6 +220,162 @@
   opacity: 0.3;
 }
 
+/* Controls for view switching */
+.controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  justify-content: space-between;
+}
+
+.controls button {
+  padding: 10px 20px;
+  cursor: pointer;
+  background: linear-gradient(90deg, #64748b 0%, #94a3b8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.controls button:hover {
+  background: linear-gradient(90deg, #475569 0%, #64748b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Search container styling */
+.search-container {
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-container input {
+  padding: 12px 16px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.search-container input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+
+.search-container input::placeholder {
+  color: #9ca3af;
+}
+
+/* Historique styling */
+.historique-view {
+  padding: 24px 0;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.historique-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.historique-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.results-count {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Empty state styling */
+.empty-state {
+  padding: 40px !important;
+  text-align: center;
+  background-color: #f9fafb !important;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+  color: #4b5563;
+}
+
+.secondary-text {
+  font-size: 14px !important;
+  margin-top: 12px !important;
+  color: #9ca3af !important;
+}
+
+/* Table container styling */
+.table-container {
+  border-radius: 12px;
+  overflow: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Table styling */
+table {
+  min-width: 1200px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-header {
+  background-color: #f3f4f6 !important;
+}
+
+.table-header th {
+  padding: 16px !important;
+  font-weight: 600 !important;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+.table-row-even {
+  background-color: white;
+}
+
+.table-row-odd {
+  background-color: #f9fafb;
+}
+
+.table-row:hover {
+  background-color: #f0f7ff !important;
+}
+
+.table-row td {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid #e5e7eb;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+/* Additional class for naturals in time-row */
+.naturals div {
+  flex-basis: 48%;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .settings-grid {
@@ -235,48 +391,20 @@
     justify-content: center;
     margin-bottom: 20px;
   }
-}
-
-
-
-.history-section {
-  margin-top: 40px;
-  padding: 20px;
-  border-top: 1px solid #ccc;
-}
-
-.history-section h2 {
-  margin-bottom: 20px;
-}
-
-.button-container {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px;
-}
-
-.save-button,
-.history-button {
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.save-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-}
-
-.history-button {
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-}
-
-.save-button:hover {
-  background-color: #45a049;
-}
-
-.history-button:hover {
-  background-color: #e0e0e0;
+  
+  .controls {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .search-container {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .historique-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
