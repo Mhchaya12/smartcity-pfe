@@ -1,9 +1,9 @@
-import React from 'react'; 
-import { getStatusColor, formatDate } from "../../../data/mockData";
+import React from 'react';
+import { getStatusColor, getSensorTypeIcon, formatDate } from "../../../data/mockData";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/components_dash_technicien/ui/card';
 import { Badge } from '@/components/components_dash_technicien/ui/badge';
-import { Cpu, Calendar, MapPin, Car, Shield, Trash, CheckCircle, AlertTriangle, Wrench, XCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/components_dash_technicien/ui/button';
+import { CheckCircle, AlertTriangle, Wrench, XCircle, MapPin, Calendar } from 'lucide-react';
 
 export const SensorStatus = ({ sensor, showDetails = false, onStatusChange }) => {
   const STATUS_TEXT = {
@@ -13,22 +13,15 @@ export const SensorStatus = ({ sensor, showDetails = false, onStatusChange }) =>
     maintenance: 'En maintenance'
   };
 
-  const SENSOR_ICONS = {
-    dechet: <Trash className="w-5 h-5" />,
-    transport: <Car className="w-5 h-5" />,
-    securite: <Shield className="w-5 h-5" />,
-    default: <Cpu className="w-5 h-5" />
-  };
-
   const STATUS_ICONS = {
     operational: <CheckCircle className="h-5 w-5 text-green-500" />,
     warning: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
     failed: <XCircle className="h-5 w-5 text-red-500" />,
-    maintenance: <Wrench className="h-5 w-5 text-blue-500" />,
-    default: <Settings className="h-5 w-5" />
+    maintenance: <Wrench className="h-5 w-5 text-blue-500" />
   };
 
   const SENSOR_TYPES = {
+    energie: 'Énergie',
     dechet: 'Déchets',
     transport: 'Transport',
     securite: 'Sécurité'
@@ -41,13 +34,34 @@ export const SensorStatus = ({ sensor, showDetails = false, onStatusChange }) =>
     { status: 'maintenance', icon: Wrench, label: 'Maintenance', colors: 'text-blue-600 border-blue-200 hover:bg-blue-50' }
   ];
 
+  // Formatage des dates
+  const lastUpdate = sensor.dernier_mise_a_jour ? formatDate(sensor.dernier_mise_a_jour) : 'N/A';
+  const lastMaintenance = sensor.lastMaintenance ? formatDate(sensor.lastMaintenance) : 'N/A';
+  const installationDate = sensor.installationDate ? formatDate(sensor.installationDate) : 'N/A';
+
+  // Données spécifiques au type de capteur
+  const getSpecificData = () => {
+    switch (sensor.type) {
+      case 'energie':
+        return `Seuil: ${sensor.seuilConsomation} kWh | Batterie: ${sensor.batteryLevel}%`;
+      case 'dechet':
+        return `Remplissage: ${sensor.niveaux_remplissage}% | Batterie: ${sensor.batteryLevel}%`;
+      case 'transport':
+        return `Flux: ${sensor.fluxActuelle} véhicules/h | Batterie: ${sensor.batteryLevel}%`;
+      case 'securite':
+        return `Anomalies: ${sensor.anomalieDetection} | Batterie: ${sensor.batteryLevel}%`;
+      default:
+        return `État: ${sensor.pourcentage}%`;
+    }
+  };
+
   return (
     <Card className="h-full transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div className="flex items-center">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3`}>
-              {SENSOR_ICONS[sensor.type] || SENSOR_ICONS.default}
+              {getSensorTypeIcon(sensor.type)}
             </div>
             <div>
               <CardTitle className="text-base font-medium">{sensor.name}</CardTitle>
@@ -56,8 +70,8 @@ export const SensorStatus = ({ sensor, showDetails = false, onStatusChange }) =>
               </p>
             </div>
           </div>
-          <Badge className={`px-2 py-1 flex items-center gap-1 rounded-full`}>
-            {STATUS_ICONS[sensor.status] || STATUS_ICONS.default}
+          <Badge className={`px-2 py-1 flex items-center gap-1 rounded-full ${getStatusColor(sensor.status)}`}>
+            {STATUS_ICONS[sensor.status]}
             <span className="ml-1 text-xs font-medium">
               {STATUS_TEXT[sensor.status] || sensor.status}
             </span>
@@ -72,11 +86,21 @@ export const SensorStatus = ({ sensor, showDetails = false, onStatusChange }) =>
             <span>{sensor.location}</span>
           </div>
 
+          <div className="flex items-center text-sm text-gray-700">
+            <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+            <span>Dernière mise à jour: {lastUpdate}</span>
+          </div>
+
           {showDetails && (
-            <div className="flex items-center text-sm mt-2 text-gray-700">
-              <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-              <span>Dernière maintenance: {formatDate(sensor.lastMaintenance)}</span>
-            </div>
+            <>
+              <div className="flex items-center text-sm text-gray-700">
+                <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                <span>Dernière maintenance: {lastMaintenance}</span>
+              </div>
+              <div className="text-sm text-gray-700">
+                <span>{getSpecificData()}</span>
+              </div>
+            </>
           )}
         </div>
       </CardContent>
@@ -85,7 +109,7 @@ export const SensorStatus = ({ sensor, showDetails = false, onStatusChange }) =>
         <CardFooter className="pt-0 text-xs text-gray-500 border-t border-gray-100">
           <div className="flex justify-between w-full py-2">
             <span>ID: {sensor.id}</span>
-            <span>Installé: {formatDate(sensor.installationDate).split(' ')[0]}</span>
+            <span>Installé: {installationDate.split(' ')[0]}</span>
           </div>
         </CardFooter>
       )}
@@ -109,3 +133,5 @@ export const SensorStatus = ({ sensor, showDetails = false, onStatusChange }) =>
     </Card>
   );
 };
+
+export default SensorStatus;

@@ -1,7 +1,8 @@
 import React from 'react';
 import { 
   getPriorityColor, 
-  formatDate 
+  formatDate ,
+  sensors
 } from "../../../data/mockData";
 import { Card, CardContent } from '@/components/components_dash_technicien/ui/card';
 import { Badge } from '@/components/components_dash_technicien/ui/badge';
@@ -14,7 +15,11 @@ import {
   AlertCircle,
   RotateCw,
   Search,
-  Settings
+  Settings,
+  Battery,
+  Trash2,
+  Car,
+  Shield
 } from 'lucide-react';
 
 export const MaintenancePlanner = ({ 
@@ -25,53 +30,42 @@ export const MaintenancePlanner = ({
   const DISPLAY_TASKS = limit ? tasks.slice(0, limit) : tasks;
 
   const TASK_CONFIG = {
-    replacement: { label: 'Remplacement' },
-    calibration: { label: 'Calibration' },
-    inspection: { label: 'Inspection' },
-    repair: { label: 'Réparation' },
-    default: { label: 'Inconnu' }
+    replacement: { label: 'Remplacement', icon: <Wrench className="h-4 w-4" /> },
+    calibration: { label: 'Calibration', icon: <RotateCw className="h-4 w-4" /> },
+    inspection: { label: 'Inspection', icon: <Search className="h-4 w-4" /> },
+    repair: { label: 'Réparation', icon: <Settings className="h-4 w-4" /> },
+    default: { label: 'Inconnu', icon: <Settings className="h-4 w-4" /> }
   };
 
   const STATUS_CONFIG = {
-    pending: { label: 'En attente' },
-    in_progress: { label: 'En cours' },
-    completed: { label: 'Terminé' },
-    default: { label: 'Inconnu' }
-  };
-
-  const PRIORITY_CONFIG = {
-    critical: { label: 'Critique' },
-    high: { label: 'Élevée' },
-    medium: { label: 'Moyenne' },
-    low: { label: 'Basse' },
-    default: { label: 'Inconnu' }
-  };
-
-  const TASK_STYLES = {
-    replacement: { icon: <Wrench className="h-4 w-4" /> },
-    calibration: { icon: <RotateCw className="h-4 w-4" /> },
-    inspection: { icon: <Search className="h-4 w-4" /> },
-    repair: { icon: <Settings className="h-4 w-4" /> },
-    default: { icon: <Settings className="h-4 w-4" /> }
-  };
-
-  const STATUS_STYLES = {
     pending: { 
+      label: 'En attente',
       icon: <Clock className="h-4 w-4 text-yellow-500" />,
       badgeClass: 'bg-yellow-100 text-yellow-800 border-yellow-200'
     },
     in_progress: { 
+      label: 'En cours',
       icon: <Settings className="h-4 w-4 text-blue-500" />,
       badgeClass: 'bg-blue-100 text-blue-800 border-blue-200'
     },
     completed: { 
+      label: 'Terminé',
       icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
       badgeClass: 'bg-green-100 text-green-800 border-green-200'
     },
     default: { 
+      label: 'Inconnu',
       icon: <Clock className="h-4 w-4" />,
       badgeClass: 'bg-gray-100 text-gray-800'
     }
+  };
+
+  const SENSOR_TYPE_ICONS = {
+    transport: <Car className="h-4 w-4" />,
+    energie: <Battery className="h-4 w-4" />,
+    dechet: <Trash2 className="h-4 w-4" />,
+    securite: <Shield className="h-4 w-4" />,
+    default: <Settings className="h-4 w-4" />
   };
 
   const DUE_STYLES = {
@@ -82,16 +76,11 @@ export const MaintenancePlanner = ({
 
   const getPriorityBadgeClass = (priority) => {
     switch(priority) {
-      case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'high':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'low':
-        return 'bg-green-100 text-green-800 border-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'medium': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -106,6 +95,25 @@ export const MaintenancePlanner = ({
     return dueDate < new Date();
   };
 
+  // Nouvelle fonction pour obtenir les détails spécifiques au type de capteur
+  const getSensorSpecificInfo = (task) => {
+    const sensor = sensors.find(s => s.id === task.sensorId);
+    if (!sensor) return null;
+
+    switch(sensor.type) {
+      case 'transport':
+        return `Flux actuel: ${sensor.fluxActuelle} véhicules/h`;
+      case 'energie':
+        return `Consommation: ${sensor.seuilConsomation} kWh`;
+      case 'dechet':
+        return `Niveau: ${sensor.niveaux_remplissage}%`;
+      case 'securite':
+        return `Anomalies: ${sensor.anomalieDetection}`;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-4">
       {DISPLAY_TASKS.length === 0 ? (
@@ -117,11 +125,11 @@ export const MaintenancePlanner = ({
       ) : (
         DISPLAY_TASKS.map((task) => {
           const taskConfig = TASK_CONFIG[task.taskType] || TASK_CONFIG.default;
-          const taskStyle = TASK_STYLES[task.taskType] || TASK_STYLES.default;
           const statusConfig = STATUS_CONFIG[task.status] || STATUS_CONFIG.default;
-          const statusStyle = STATUS_STYLES[task.status] || STATUS_STYLES.default;
-          const priorityConfig = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.default;
+          const sensor = sensors.find(s => s.id === task.sensorId);
+          const sensorIcon = sensor ? SENSOR_TYPE_ICONS[sensor.type] || SENSOR_TYPE_ICONS.default : SENSOR_TYPE_ICONS.default;
           const dueStatus = isOverdue(task.dueDate) ? 'overdue' : isDueSoon(task.dueDate) ? 'dueSoon' : 'normal';
+          const sensorInfo = getSensorSpecificInfo(task);
 
           return (
             <Card 
@@ -137,26 +145,30 @@ export const MaintenancePlanner = ({
                   <div className="flex justify-between items-start">
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0 p-2 bg-blue-50 rounded-full">
-                        <CalendarClock className="h-5 w-5 text-blue-500" />
+                        {sensorIcon}
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-900">{taskConfig.label} - {task.sensorName}</h3>
-                        <p className="text-sm text-gray-500">ID: {task.sensorId}</p>
+                        <h3 className="font-medium text-gray-900">
+                          {taskConfig.label} - {task.sensorName}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          ID: {task.sensorId} • {sensor?.location || 'Lieu inconnu'}
+                        </p>
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
                       <Badge className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${getPriorityBadgeClass(task.priority)}`}>
-                        {priorityConfig.label}
+                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                       </Badge>
-                      <Badge className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${statusStyle.badgeClass}`}>
-                        {statusStyle.icon}
+                      <Badge className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${statusConfig.badgeClass}`}>
+                        {statusConfig.icon}
                         <span>{statusConfig.label}</span>
                       </Badge>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-b border-gray-100 py-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-b border-gray-200 py-3">
                     <div className="flex items-center">
                       <p className="text-sm text-gray-500 w-24">Échéance:</p>
                       <div className="flex items-center">
@@ -177,20 +189,27 @@ export const MaintenancePlanner = ({
                       <p className="text-sm text-gray-500 w-24">Assigné à:</p>
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-700 mr-2">
-                          {task.assignedTo.split(' ')[0][0]}{task.assignedTo.split(' ')[1]?.[0] || ''}
+                          {task.assignedTo?.split(' ')[0]?.[0] || 'N'}{task.assignedTo?.split(' ')[1]?.[0] || 'A'}
                         </div>
-                        <span className="text-sm font-medium">{task.assignedTo}</span>
+                        <span className="text-sm font-medium">{task.assignedTo || 'Non assigné'}</span>
                       </div>
                     </div>
+
+                    {sensorInfo && (
+                      <div className="flex items-center">
+                        <p className="text-sm text-gray-500 w-24">Statut:</p>
+                        <span className="text-sm text-gray-700">{sensorInfo}</span>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="text-sm">
                     <p className="text-gray-500 mb-1">Notes:</p>
-                    <p className="text-gray-700">{task.notes}</p>
+                    <p className="text-gray-700">{task.notes || 'Aucune note'}</p>
                   </div>
                   
                   {task.status !== 'completed' && onStatusChange && (
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end pt-2 space-x-2">
                       {task.status === 'pending' && (
                         <Button 
                           variant="outline" 

@@ -240,7 +240,7 @@ export const maintenanceTasks = [
     dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), // 2 days from now
     priority: "high",
     status: "pending",
-    notes: "il y'a une flux",
+    notes: "Battery needs to be replaced due to low power levels",
   },
   {
     id: "m2",

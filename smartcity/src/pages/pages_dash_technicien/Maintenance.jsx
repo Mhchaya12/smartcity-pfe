@@ -6,15 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/compo
 import { Input } from '../../components/components_dash_technicien/ui/input';
 import { Button } from '../../components/components_dash_technicien/ui/button';
 import { useToast } from '../../components/components_dash_technicien/ui/use-toast';
-import { maintenanceTasks as mockTasks } from '../../data/mockData';
+import { maintenanceTasks, sensors } from '../../data/mockData';
 import { Search, Filter, Clock, CheckCheck, Settings } from 'lucide-react';
 
 const Maintenance = () => {
-  const [tasks, setTasks] = useState(mockTasks);
+  const [tasks, setTasks] = useState(maintenanceTasks);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
-  
-
   
   const pendingTasks = tasks.filter(t => t.status === 'pending');
   const inProgressTasks = tasks.filter(t => t.status === 'in_progress');
@@ -38,26 +36,23 @@ const Maintenance = () => {
     });
   };
   
-  const filteredPendingTasks = pendingTasks.filter(task => 
-    task.sensorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    task.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.assignedTo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.sensorId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filterTasks = (taskList) => {
+    return taskList.filter(task => {
+      const sensor = sensors.find(s => s.id === task.sensorId) || {};
+      return (
+        task.sensorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (task.assignedTo?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        task.sensorId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.taskType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
+      );
+    });
+  };
   
-  const filteredInProgressTasks = inProgressTasks.filter(task => 
-    task.sensorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    task.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.assignedTo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.sensorId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  const filteredCompletedTasks = completedTasks.filter(task => 
-    task.sensorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    task.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.assignedTo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.sensorId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPendingTasks = filterTasks(pendingTasks);
+  const filteredInProgressTasks = filterTasks(inProgressTasks);
+  const filteredCompletedTasks = filterTasks(completedTasks);
 
   return (
     <DashboardLayout>
@@ -129,7 +124,7 @@ const Maintenance = () => {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Rechercher..."
+                  placeholder="Rechercher par nom, type, lieu..."
                   className="pl-8 w-full md:w-[250px] lg:w-[300px]"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -169,6 +164,7 @@ const Maintenance = () => {
                 <MaintenancePlanner 
                   tasks={filteredPendingTasks} 
                   onStatusChange={handleStatusChange} 
+                  sensors={sensors}
                 />
               )}
             </TabsContent>
@@ -182,6 +178,7 @@ const Maintenance = () => {
                 <MaintenancePlanner 
                   tasks={filteredInProgressTasks} 
                   onStatusChange={handleStatusChange} 
+                  sensors={sensors}
                 />
               )}
             </TabsContent>
@@ -193,7 +190,8 @@ const Maintenance = () => {
                 </div>
               ) : (
                 <MaintenancePlanner 
-                  tasks={filteredCompletedTasks} 
+                  tasks={filteredCompletedTasks}
+                  sensors={sensors}
                 />
               )}
             </TabsContent>
@@ -204,4 +202,4 @@ const Maintenance = () => {
   );
 };
 
-export default Maintenance; 
+export default Maintenance;

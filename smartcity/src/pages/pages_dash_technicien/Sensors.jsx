@@ -8,7 +8,7 @@ import { Button } from '../../components/components_dash_technicien/ui/button';
 import { Badge } from '../../components/components_dash_technicien/ui/badge';
 import { Progress } from '../../components/components_dash_technicien/ui/progress';
 import { useToast } from '../../components/components_dash_technicien/ui/use-toast';
-import { sensors as mockSensors } from '../../data/mockData';
+import { sensors as mockSensors, getSensorTypeIcon, formatDate } from '../../data/mockData';
 import { Cpu, Search, Filter, AlertTriangle, CheckCircle, Wrench, RotateCw } from 'lucide-react';
 
 const Sensors = () => {
@@ -20,6 +20,12 @@ const Sensors = () => {
   const warningSensors = sensors.filter(s => s.status === 'warning');
   const failedSensors = sensors.filter(s => s.status === 'failed');
   const maintenanceSensors = sensors.filter(s => s.status === 'maintenance');
+  
+  // Filtrage par type de capteur
+  const energieSensors = sensors.filter(s => s.type === 'energie');
+  const dechetSensors = sensors.filter(s => s.type === 'dechet');
+  const transportSensors = sensors.filter(s => s.type === 'transport');
+  const securiteSensors = sensors.filter(s => s.type === 'securite');
   
   const totalSensors = sensors.length;
   const operationalPercentage = Math.round((operationalSensors.length / totalSensors) * 100);
@@ -56,39 +62,132 @@ const Sensors = () => {
   };
   
   const filteredSensors = sensors.filter(sensor => 
-    sensor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    sensor.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.id.toLowerCase().includes(searchQuery.toLowerCase())
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   const filteredOperationalSensors = operationalSensors.filter(sensor => 
-    sensor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    sensor.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.id.toLowerCase().includes(searchQuery.toLowerCase())
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   const filteredWarningSensors = warningSensors.filter(sensor => 
-    sensor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    sensor.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.id.toLowerCase().includes(searchQuery.toLowerCase())
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   const filteredFailedSensors = failedSensors.filter(sensor => 
-    sensor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    sensor.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.id.toLowerCase().includes(searchQuery.toLowerCase())
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   const filteredMaintenanceSensors = maintenanceSensors.filter(sensor => 
-    sensor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    sensor.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sensor.id.toLowerCase().includes(searchQuery.toLowerCase())
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  // Filtrage des capteurs par type
+  const filteredEnergieSensors = energieSensors.filter(sensor => 
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const filteredDechetSensors = dechetSensors.filter(sensor => 
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const filteredTransportSensors = transportSensors.filter(sensor => 
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const filteredSecuriteSensors = securiteSensors.filter(sensor => 
+    sensor.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sensor.id?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Fonction pour afficher le pourcentage et les dernières mesures spécifiques au type de capteur
+  const renderSensorSpecificData = (sensor) => {
+    const lastUpdate = sensor.dernier_mise_a_jour ? formatDate(sensor.dernier_mise_a_jour) : 'N/A';
+    
+    switch (sensor.type) {
+      case 'energie':
+        return (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              Seuil: {sensor.seuilConsomation} kWh | Dernière mise à jour: {lastUpdate}
+            </div>
+            <Progress value={sensor.pourcentage} className="h-2" />
+            <div className="text-xs text-muted-foreground mt-1">
+              Batterie: {sensor.batteryLevel}%
+            </div>
+          </div>
+        );
+      case 'dechet':
+        return (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              Remplissage: {sensor.niveaux_remplissage}% | Dernière mise à jour: {lastUpdate}
+            </div>
+            <Progress value={sensor.niveaux_remplissage} className="h-2" />
+            <div className="text-xs text-muted-foreground mt-1">
+              Batterie: {sensor.batteryLevel}%
+            </div>
+          </div>
+        );
+      case 'transport':
+        return (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              Flux: {sensor.fluxActuelle} véhicules/h | Dernière mise à jour: {lastUpdate}
+            </div>
+            <Progress value={sensor.pourcentage} className="h-2" />
+            <div className="text-xs text-muted-foreground mt-1">
+              Batterie: {sensor.batteryLevel}%
+            </div>
+          </div>
+        );
+      case 'securite':
+        return (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              Anomalies: {sensor.anomalieDetection} | Dernière mise à jour: {lastUpdate}
+            </div>
+            <Progress value={sensor.pourcentage} className="h-2" />
+            <div className="text-xs text-muted-foreground mt-1">
+              Batterie: {sensor.batteryLevel}%
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              État: {sensor.pourcentage}% | Dernière mise à jour: {lastUpdate}
+            </div>
+            <Progress value={sensor.pourcentage} className="h-2" />
+            <div className="text-xs text-muted-foreground mt-1">
+              Batterie: {sensor.batteryLevel}%
+            </div>
+          </div>
+        );
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -100,7 +199,7 @@ const Sensors = () => {
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>État du Système</CardTitle>
-          <CardDescription>Aperçu de la santé globale du système de capteurs</CardDescription>
+          <CardDescription>Aperçu de la santé globale du système deonomous capteurs</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -242,13 +341,17 @@ const Sensors = () => {
               <Button variant="outline" size="icon">
                 <Filter className="h-4 w-4" />
               </Button>
+              
+              <Button variant="outline" size="icon" onClick={() => setSensors(mockSensors)}>
+                <RotateCw className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </CardHeader>
         
         <CardContent className="pt-6">
           <Tabs defaultValue="all" className="w-full">
-            <TabsList className="mb-4">
+            <TabsList className="mb-4 flex flex-wrap">
               <TabsTrigger value="all" className="flex items-center">
                 <Cpu className="h-4 w-4 mr-2" />
                 <span>Tous ({filteredSensors.length})</span>
@@ -269,6 +372,23 @@ const Sensors = () => {
                 <Wrench className="h-4 w-4 mr-2" />
                 <span>Maintenance ({filteredMaintenanceSensors.length})</span>
               </TabsTrigger>
+              
+              <TabsTrigger value="energie" className="flex items-center">
+                {getSensorTypeIcon('energie')}
+                <span>Énergie ({filteredEnergieSensors.length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="dechet" className="flex items-center">
+                {getSensorTypeIcon('dechet')}
+                <span>Déchets ({filteredDechetSensors.length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="transport" className="flex items-center">
+                {getSensorTypeIcon('transport')}
+                <span>Transport ({filteredTransportSensors.length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="securite" className="flex items-center">
+                {getSensorTypeIcon('securite')}
+                <span>Sécurité ({filteredSecuriteSensors.length})</span>
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="all">
@@ -283,6 +403,7 @@ const Sensors = () => {
                       key={sensor.id} 
                       sensor={sensor} 
                       onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
                     />
                   ))
                 )}
@@ -301,6 +422,7 @@ const Sensors = () => {
                       key={sensor.id} 
                       sensor={sensor} 
                       onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
                     />
                   ))
                 )}
@@ -319,6 +441,7 @@ const Sensors = () => {
                       key={sensor.id} 
                       sensor={sensor} 
                       onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
                     />
                   ))
                 )}
@@ -337,6 +460,7 @@ const Sensors = () => {
                       key={sensor.id} 
                       sensor={sensor} 
                       onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
                     />
                   ))
                 )}
@@ -355,6 +479,83 @@ const Sensors = () => {
                       key={sensor.id} 
                       sensor={sensor} 
                       onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="energie">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredEnergieSensors.length === 0 ? (
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    Aucun capteur d'énergie ne correspond à votre recherche
+                  </div>
+                ) : (
+                  filteredEnergieSensors.map((sensor) => (
+                    <SensorStatus 
+                      key={sensor.id} 
+                      sensor={sensor} 
+                      onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="dechet">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredDechetSensors.length === 0 ? (
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    Aucun capteur de déchets ne correspond à votre recherche
+                  </div>
+                ) : (
+                  filteredDechetSensors.map((sensor) => (
+                    <SensorStatus 
+                      key={sensor.id} 
+                      sensor={sensor} 
+                      onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="transport">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredTransportSensors.length === 0 ? (
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    Aucun capteur de transport ne correspond à votre recherche
+                  </div>
+                ) : (
+                  filteredTransportSensors.map((sensor) => (
+                    <SensorStatus 
+                      key={sensor.id} 
+                      sensor={sensor} 
+                      onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="securite">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredSecuriteSensors.length === 0 ? (
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    Aucun capteur de sécurité ne correspond à votre recherche
+                  </div>
+                ) : (
+                  filteredSecuriteSensors.map((sensor) => (
+                    <SensorStatus 
+                      key={sensor.id} 
+                      sensor={sensor} 
+                      onStatusChange={handleStatusChange}
+                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
                     />
                   ))
                 )}
@@ -367,4 +568,4 @@ const Sensors = () => {
   );
 };
 
-export default Sensors; 
+export default Sensors;
