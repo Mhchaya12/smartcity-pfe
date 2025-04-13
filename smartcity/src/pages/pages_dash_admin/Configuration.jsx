@@ -4,21 +4,22 @@ import 'rc-slider/assets/index.css';
 import { TextField, MenuItem, Select, InputLabel, FormControl, Table, TableBody, TableCell, TableHead, TableRow, Paper } from '@mui/material';
 import Header from '../../components/components_dash_admin/Header/Header';
 import Layout from '../../components/components_dash_admin/Layout/Layout';
+import { initialConfigSettings } from '../../data/adminData'; // Import from adminData.js
 import '../../styles/Configuration.css';
 
 const Configuration = () => {
-  const [energyThreshold, setEnergyThreshold] = useState(300);
-  const [peakStart, setPeakStart] = useState('07:00');
-  const [peakEnd, setPeakEnd] = useState('14:00');
-  const [peakMorning, setPeakMorning] = useState('09:00');
-  const [peakEvening, setPeakEvening] = useState('17:30');
-  const [trafficInterval, setTrafficInterval] = useState(30);
-  const [wasteThreshold, setWasteThreshold] = useState(85);
-  const [wasteFrequency, setWasteFrequency] = useState('QUOTIDIENNE');
-  const [wasteTime, setWasteTime] = useState('08:15');
-  const [securityIncidentThreshold, setSecurityIncidentThreshold] = useState(1);
-  const [securityCheckFrequency, setSecurityCheckFrequency] = useState('15 minutes');
-  const [securityCriticalLevel, setSecurityCriticalLevel] = useState(2);
+  const [energyThreshold, setEnergyThreshold] = useState(initialConfigSettings.energyThreshold);
+  const [peakStart, setPeakStart] = useState(initialConfigSettings.peakStart);
+  const [peakEnd, setPeakEnd] = useState(initialConfigSettings.peakEnd);
+  const [peakMorning, setPeakMorning] = useState(initialConfigSettings.peakMorning);
+  const [peakEvening, setPeakEvening] = useState(initialConfigSettings.peakEvening);
+  const [trafficInterval, setTrafficInterval] = useState(initialConfigSettings.trafficInterval);
+  const [wasteThreshold, setWasteThreshold] = useState(initialConfigSettings.wasteThreshold);
+  const [wasteFrequency, setWasteFrequency] = useState(initialConfigSettings.wasteFrequency);
+  const [wasteTime, setWasteTime] = useState(initialConfigSettings.wasteTime);
+  const [securityIncidentThreshold, setSecurityIncidentThreshold] = useState(initialConfigSettings.securityIncidentThreshold);
+  const [securityCheckFrequency, setSecurityCheckFrequency] = useState(initialConfigSettings.securityCheckFrequency);
+  const [securityCriticalLevel, setSecurityCriticalLevel] = useState(initialConfigSettings.securityCriticalLevel);
 
   // État pour l'historique et l'affichage
   const [history, setHistory] = useState([]);

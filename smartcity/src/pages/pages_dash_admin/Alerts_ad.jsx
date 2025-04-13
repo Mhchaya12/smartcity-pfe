@@ -3,104 +3,48 @@ import Layout from '../../components/components_dash_admin/Layout/Layout';
 import Header from '../../components/components_dash_admin/Header/Header';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { activeAlerts, resolvedAlerts } from '../../data/adminData'; // Import from adminData.js
 import "../../styles/Alerts.css";
 
-// Enum supposée pour AlertType
-const AlertType = {
-  INFO: "INFO",
-  WARNING: "WARNING",
-  CRITICAL: "CRITICAL",
-  NOTICE: "NOTICE",
-  SUCCESS: "SUCCESS",
-};
-
 const Alerts = ({
-  historiquesActifs,
-  historiquesTraites,
+  historiquesActifs = activeAlerts, // Default to imported data if prop not provided
+  historiquesTraites = resolvedAlerts, // Default to imported data if prop not provided
   gererResolution,
   ongletActif,
   setOngletActif,
 }) => {
-  const [activeAlerts, setActiveAlerts] = useState([
-    {
-      id: 1,
-      timestamp: new Date("2025-03-14T23:23:00"),
-      type: AlertType.WARNING,
-      message: "Consommation d'énergie dépassée",
-      location: "Rue de Marseille",
-      sensorId: "",
-      resolved: false,
-    },
-    {
-      id: 2,
-      timestamp: new Date("2025-03-14T22:53:00"),
-      type: AlertType.CRITICAL,
-      message: "Niveau de déchets critique",
-      location: "Avenue Mohammed-V",
-      sensorId: "",
-      resolved: false,
-    },
-    {
-      id: 3,
-      timestamp: new Date("2025-03-14T21:38:00"),
-      type: AlertType.INFO,
-      message: "Flux de circulation élevé",
-      location: "Avenue Centrale",
-      sensorId: "",
-      resolved: false,
-    },
-    {
-      id: 4,
-      timestamp: new Date("2025-03-14T20:38:00"),
-      type: AlertType.NOTICE,
-      message: "Sécurité en dessous des normes",
-      location: "Avenue Habib-Bourguiba",
-      sensorId: "",
-      resolved: false,
-    },
-    {
-      id: 5,
-      timestamp: new Date("2025-03-14T20:08:00"),
-      type: AlertType.WARNING,
-      message: "Fuite d'eau détectée",
-      location: "Réseau principal",
-      sensorId: "",
-      resolved: false,
-    },
-  ]);
-
-  const [resolvedAlerts, setResolvedAlerts] = useState([
-    {
-      id: 6,
-      timestamp: new Date("2025-03-14T19:45:00"),
-      type: AlertType.SUCCESS,
-      message: "Panne résolue",
-      location: "Zone 1",
-      sensorId: "",
-      resolved: true,
-    },
-  ]);
-
-  const [activeTab, setActiveTab] = useState('Actives');
+  const [activeAlertsState, setActiveAlerts] = useState(historiquesActifs);
+  const [resolvedAlertsState, setResolvedAlerts] = useState(historiquesTraites);
+  const [activeTab, setActiveTab] = useState(ongletActif || 'Actives');
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleResolve = (id) => {
-    const alertToResolve = activeAlerts.find((alert) => alert.id === id);
+    const alertToResolve = activeAlertsState.find((alert) => alert.id === id);
     if (alertToResolve) {
-      setActiveAlerts(activeAlerts.filter((alert) => alert.id !== id));
-      setResolvedAlerts([...resolvedAlerts, { ...alertToResolve, resolved: true }]);
+      setActiveAlerts(activeAlertsState.filter((alert) => alert.id !== id));
+      setResolvedAlerts([...resolvedAlertsState, { ...alertToResolve, resolved: true }]);
       setActiveTab('Résolues'); // Switch to Resolved tab
+      if (gererResolution) {
+        gererResolution(id); // Call prop function if provided
+      }
     }
   };
 
   // Filter alerts based on search term
-  const filteredActiveAlerts = activeAlerts.filter((alert) =>
+  const filteredActiveAlerts = activeAlertsState.filter((alert) =>
     `${alert.message} ${alert.location}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredResolvedAlerts = resolvedAlerts.filter((alert) =>
+  const filteredResolvedAlerts = resolvedAlertsState.filter((alert) =>
     `${alert.message} ${alert.location}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Sync activeTab with ongletActif prop if provided
+  React.useEffect(() => {
+    if (ongletActif && ongletActif !== activeTab) {
+      setActiveTab(ongletActif);
+    }
+  }, [ongletActif]);
 
   return (
     <Layout>
@@ -112,15 +56,21 @@ const Alerts = ({
         <div className="tabs">
           <button
             className={`tab ${activeTab === 'Actives' ? 'active' : ''}`}
-            onClick={() => setActiveTab('Actives')}
+            onClick={() => {
+              setActiveTab('Actives');
+              if (setOngletActif) setOngletActif('Actives');
+            }}
           >
-            Actives ({activeAlerts.length})
+            Actives ({activeAlertsState.length})
           </button>
           <button
             className={`tab ${activeTab === 'Résolues' ? 'active' : ''}`}
-            onClick={() => setActiveTab('Résolues')}
+            onClick={() => {
+              setActiveTab('Résolues');
+              if (setOngletActif) setOngletActif('Résolues');
+            }}
           >
-            Résolues ({resolvedAlerts.length})
+            Résolues ({resolvedAlertsState.length})
           </button>
           <div className="search-bar">
             <input

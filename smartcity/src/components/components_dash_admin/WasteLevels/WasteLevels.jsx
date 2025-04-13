@@ -1,21 +1,8 @@
 import React from 'react';
+import { zones, wasteLevels } from '../../../data/adminData'; // Import from adminData.js
 import './WasteLevels.css';
 
 const WasteLevels = () => {
-  const zones = [
-    'Avenue Habib-Bourguiba',
-    'Rue de Marseille',
-    'Rue de Rome',
-    'Avenue Mohammed-V'
-  ];
-
-  const wasteLevels = {
-    'Avenue Habib-Bourguiba': 75,  // From Zone 1 recyclable
-    'Rue de Marseille': 90,        // From Zone 3 recyclable
-    'Rue de Rome': 45,             // From Zone 4 recyclable
-    'Avenue Mohammed-V': 80        // From Zone 5 recyclable
-  };
-
   return (
     <div className="waste-levels-card">
       <h3>Niveau de Déchets par Zone</h3>

@@ -245,7 +245,7 @@ export const maintenanceTasks = [
   {
     id: "m2",
     sensorId: "s2",
-    sensorName: "Moniteur de consommation d'énergie",
+    sensorName: "Consommation d'énergie",
     taskType: "repair",
     dueDate: new Date(Date.now() + 1000 * 60 * 60 * 12), // 12 hours from now
     priority: "critical",
@@ -274,17 +274,7 @@ export const maintenanceTasks = [
     assignedTo: "Technicien 3",
     notes: "Regular inspection to verify sensor accuracy",
   },
-  {
-    id: "m5",
-    sensorId: "s5",
-    sensorName: "Contrôleur d'énergie intelligent",
-    taskType: "repair",
-    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day from now
-    priority: "high",
-    status: "completed",
-    assignedTo: "Technicien 2",
-    notes: "Connection issue resolved, module replaced",
-  },
+  
 ];
 
 // Helper functions

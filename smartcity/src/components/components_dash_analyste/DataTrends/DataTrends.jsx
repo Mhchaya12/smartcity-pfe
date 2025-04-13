@@ -1,50 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { generateLabels, generateRandomData, getChartOptions } from '../../../data/analysteData'; // Importer depuis analysteData
 import './DataTrends.css';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
 const DataTrends = ({ period, sensorType }) => {
   const [chartType, setChartType] = useState('line');
   const [energyData, setEnergyData] = useState({
     labels: [],
-    datasets: []
+    datasets: [],
   });
   const [trafficData, setTrafficData] = useState({
     labels: [],
-    datasets: []
+    datasets: [],
   });
 
   // Générer des données simulées basées sur la période sélectionnée
   useEffect(() => {
-    const generateLabels = () => {
-      switch(period) {
-        case 'day':
-          return ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00'];
-        case 'week':
-          return ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-        case 'month':
-          return Array.from({ length: 31 }, (_, i) => `${i + 1}`);
-        case 'year':
-          return ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-        default:
-          return ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00'];
-      }
-    };
+    const labels = generateLabels(period);
 
-    const generateRandomData = (min, max, count) => {
-      return Array.from({ length: count }, () => Math.floor(Math.random() * (max - min + 1) + min));
-    };
-
-    const labels = generateLabels();
-    
     // Simulation de données d'énergie
     setEnergyData({
       labels,
       datasets: [
         {
-          label: 'Consommation d\'Énergie',
+          label: "Consommation d'Énergie",
           data: generateRandomData(300, 500, labels.length),
           borderColor: 'rgba(53, 162, 235, 1)',
           backgroundColor: 'rgba(53, 162, 235, 0.5)',
@@ -59,7 +38,7 @@ const DataTrends = ({ period, sensorType }) => {
           borderWidth: 2,
           pointRadius: 0,
           fill: false,
-        }
+        },
       ],
     });
 
@@ -86,36 +65,7 @@ const DataTrends = ({ period, sensorType }) => {
     });
   }, [period]);
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: sensorType === 'all' || sensorType === 'Énergie' 
-          ? `Tendances de Consommation d'Énergie (${period})` 
-          : `Flux de Circulation (${period})`,
-        font: { size: 16 }
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function(value) {
-            if (sensorType === 'all' || sensorType === 'Énergie') {
-              return value + ' kWh';
-            } else {
-              return value + ' veh/h';
-            }
-          }
-        }
-      },
-    },
-  };
+  const options = getChartOptions(sensorType, period);
 
   const handleChartTypeChange = (type) => {
     setChartType(type);
@@ -157,30 +107,26 @@ const DataTrends = ({ period, sensorType }) => {
       <div className="data-trends-header">
         <h3>Analyse des Tendances</h3>
         <div className="chart-type-toggle">
-          <button 
-            className={`chart-type-button ${chartType === 'line' ? 'active' : ''}`} 
+          <button
+            className={`chart-type-button ${chartType === 'line' ? 'active' : ''}`}
             onClick={() => handleChartTypeChange('line')}
           >
             Ligne
           </button>
-          <button 
-            className={`chart-type-button ${chartType === 'bar' ? 'active' : ''}`} 
+          <button
+            className={`chart-type-button ${chartType === 'bar' ? 'active' : ''}`}
             onClick={() => handleChartTypeChange('bar')}
           >
             Barres
           </button>
         </div>
       </div>
-      <div className="chart-container">
-        {renderChart()}
-      </div>
+      <div className="chart-container">{renderChart()}</div>
       <div className="data-trends-footer">
         <div className="insight-badge">
           <span className="badge">+2.4%</span> par rapport à la période précédente
         </div>
-        <div className="data-source">
-          Source: Capteurs SmartCity en temps réel
-        </div>
+        <div className="data-source">Source: Capteurs SmartCity en temps réel</div>
       </div>
     </div>
   );

@@ -133,9 +133,6 @@ const Sensors = () => {
               Seuil: {sensor.seuilConsomation} kWh | Dernière mise à jour: {lastUpdate}
             </div>
             <Progress value={sensor.pourcentage} className="h-2" />
-            <div className="text-xs text-muted-foreground mt-1">
-              Batterie: {sensor.batteryLevel}%
-            </div>
           </div>
         );
       case 'dechet':
@@ -145,9 +142,6 @@ const Sensors = () => {
               Remplissage: {sensor.niveaux_remplissage}% | Dernière mise à jour: {lastUpdate}
             </div>
             <Progress value={sensor.niveaux_remplissage} className="h-2" />
-            <div className="text-xs text-muted-foreground mt-1">
-              Batterie: {sensor.batteryLevel}%
-            </div>
           </div>
         );
       case 'transport':
@@ -157,9 +151,6 @@ const Sensors = () => {
               Flux: {sensor.fluxActuelle} véhicules/h | Dernière mise à jour: {lastUpdate}
             </div>
             <Progress value={sensor.pourcentage} className="h-2" />
-            <div className="text-xs text-muted-foreground mt-1">
-              Batterie: {sensor.batteryLevel}%
-            </div>
           </div>
         );
       case 'securite':
@@ -169,9 +160,6 @@ const Sensors = () => {
               Anomalies: {sensor.anomalieDetection} | Dernière mise à jour: {lastUpdate}
             </div>
             <Progress value={sensor.pourcentage} className="h-2" />
-            <div className="text-xs text-muted-foreground mt-1">
-              Batterie: {sensor.batteryLevel}%
-            </div>
           </div>
         );
       default:
@@ -181,9 +169,6 @@ const Sensors = () => {
               État: {sensor.pourcentage}% | Dernière mise à jour: {lastUpdate}
             </div>
             <Progress value={sensor.pourcentage} className="h-2" />
-            <div className="text-xs text-muted-foreground mt-1">
-              Batterie: {sensor.batteryLevel}%
-            </div>
           </div>
         );
     }
@@ -372,24 +357,7 @@ const Sensors = () => {
                 <Wrench className="h-4 w-4 mr-2" />
                 <span>Maintenance ({filteredMaintenanceSensors.length})</span>
               </TabsTrigger>
-              
-              <TabsTrigger value="energie" className="flex items-center">
-                {getSensorTypeIcon('energie')}
-                <span>Énergie ({filteredEnergieSensors.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="dechet" className="flex items-center">
-                {getSensorTypeIcon('dechet')}
-                <span>Déchets ({filteredDechetSensors.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="transport" className="flex items-center">
-                {getSensorTypeIcon('transport')}
-                <span>Transport ({filteredTransportSensors.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="securite" className="flex items-center">
-                {getSensorTypeIcon('securite')}
-                <span>Sécurité ({filteredSecuriteSensors.length})</span>
-              </TabsTrigger>
-            </TabsList>
+            </TabsList> 
             
             <TabsContent value="all">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -485,82 +453,6 @@ const Sensors = () => {
                 )}
               </div>
             </TabsContent>
-            
-            <TabsContent value="energie">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredEnergieSensors.length === 0 ? (
-                  <div className="col-span-3 text-center py-8 text-muted-foreground">
-                    Aucun capteur d'énergie ne correspond à votre recherche
-                  </div>
-                ) : (
-                  filteredEnergieSensors.map((sensor) => (
-                    <SensorStatus 
-                      key={sensor.id} 
-                      sensor={sensor} 
-                      onStatusChange={handleStatusChange}
-                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
-                    />
-                  ))
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="dechet">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredDechetSensors.length === 0 ? (
-                  <div className="col-span-3 text-center py-8 text-muted-foreground">
-                    Aucun capteur de déchets ne correspond à votre recherche
-                  </div>
-                ) : (
-                  filteredDechetSensors.map((sensor) => (
-                    <SensorStatus 
-                      key={sensor.id} 
-                      sensor={sensor} 
-                      onStatusChange={handleStatusChange}
-                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
-                    />
-                  ))
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="transport">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredTransportSensors.length === 0 ? (
-                  <div className="col-span-3 text-center py-8 text-muted-foreground">
-                    Aucun capteur de transport ne correspond à votre recherche
-                  </div>
-                ) : (
-                  filteredTransportSensors.map((sensor) => (
-                    <SensorStatus 
-                      key={sensor.id} 
-                      sensor={sensor} 
-                      onStatusChange={handleStatusChange}
-                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
-                    />
-                  ))
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="securite">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredSecuriteSensors.length === 0 ? (
-                  <div className="col-span-3 text-center py-8 text-muted-foreground">
-                    Aucun capteur de sécurité ne correspond à votre recherche
-                  </div>
-                ) : (
-                  filteredSecuriteSensors.map((sensor) => (
-                    <SensorStatus 
-                      key={sensor.id} 
-                      sensor={sensor} 
-                      onStatusChange={handleStatusChange}
-                      renderSensorSpecificData={() => renderSensorSpecificData(sensor)}
-                    />
-                  ))
-                )}
-              </div>
-            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
@@ -568,4 +460,4 @@ const Sensors = () => {
   );
 };
 
-export default Sensors;
+export default Sensors; 

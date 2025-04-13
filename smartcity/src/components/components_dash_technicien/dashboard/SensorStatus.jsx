@@ -43,13 +43,13 @@ export const SensorStatus = ({ sensor, showDetails = false, onStatusChange }) =>
   const getSpecificData = () => {
     switch (sensor.type) {
       case 'energie':
-        return `Seuil: ${sensor.seuilConsomation} kWh | Batterie: ${sensor.batteryLevel}%`;
+        return `Seuil: ${sensor.seuilConsomation} kWh`;
       case 'dechet':
-        return `Remplissage: ${sensor.niveaux_remplissage}% | Batterie: ${sensor.batteryLevel}%`;
+        return `Remplissage: ${sensor.niveaux_remplissage}%`;
       case 'transport':
-        return `Flux: ${sensor.fluxActuelle} véhicules/h | Batterie: ${sensor.batteryLevel}%`;
+        return `Flux: ${sensor.fluxActuelle} véhicules/h`;
       case 'securite':
-        return `Anomalies: ${sensor.anomalieDetection} | Batterie: ${sensor.batteryLevel}%`;
+        return `Anomalies: ${sensor.anomalieDetection}`;
       default:
         return `État: ${sensor.pourcentage}%`;
     }

@@ -2,15 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle, faCheckCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
+import { AlertType, initialActiveAlerts } from '../../../data/adminData'; // Import from adminData.js
 import './Alerts.css';
-
-// Supposons une enum AlertType pour type
-const AlertType = {
-  INFO: "INFO",
-  WARNING: "WARNING",
-  CRITICAL: "CRITICAL",
-  NOTICE: "NOTICE",
-};
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
@@ -24,47 +17,8 @@ const Alerts = () => {
   const fetchAlerts = () => {
     setLoading(true);
     try {
-      const initialActiveAlerts = [
-        {
-          id: 1,
-          timestamp: new Date("2025-03-14T23:23:00"),
-          type: AlertType.WARNING,
-          message: "Consommation d'énergie dépassée",
-          location: "Rue de Marseille",
-          sensorId: "",
-          resolved: false,
-        },
-        {
-          id: 2,
-          timestamp: new Date("2025-03-14T22:53:00"),
-          type: AlertType.CRITICAL,
-          message: "Niveau de déchets critique",
-          location: "Avenue Mohammed-V",
-          sensorId: "",
-          resolved: false,
-        },
-        {
-          id: 3,
-          timestamp: new Date("2025-03-14T21:38:00"),
-          type: AlertType.INFO,
-          message: "Flux de circulation élevé",
-          location: "Avenue Centrale",
-          sensorId: "",
-          resolved: false,
-        },
-        {
-          id: 4,
-          timestamp: new Date("2025-03-14T20:38:00"),
-          type: AlertType.NOTICE,
-          message: "Sécurité en dessous des normes",
-          location: "Avenue Habib-Bourguiba",
-          sensorId: "",
-          resolved: false,
-        },
-      ];
-
       setTimeout(() => {
-        setAlerts(initialActiveAlerts);
+        setAlerts(initialActiveAlerts); // Use imported data
         setError(null);
         setLoading(false);
       }, 500);

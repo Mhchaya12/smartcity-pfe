@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/components_home/Navbar';
 import Footer from '../../components/components_home/Footer';
+import { authentification } from '../../data/homeData'; // Named import
 import './AuthPage.css';
 
 const AuthPage = () => {
@@ -9,19 +10,16 @@ const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [isResetPassword, setIsResetPassword] = useState(false);
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    name: '',
-    role: 'user'
-  });
+  const [formData, setFormData] = useState(authentification);
+
   useEffect(() => {
-    if( formData==='')
+    // Check if formData has any non-empty fields (optional, adjust as needed)
+    if (!formData.email && !formData.password && !formData.name && !formData.confirmPassword) {
       return;
-    console.log('function component did update')
-    
-  })
+    }
+    console.log('function component did update');
+  }, [formData]); // Added dependency array
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -32,7 +30,6 @@ const AuthPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Logique d'authentification à implémenter
     console.log('Form submitted:', formData);
   };
 
@@ -45,17 +42,15 @@ const AuthPage = () => {
             <h2>{isResetPassword ? 'Réinitialiser le mot de passe' : (isSignUp ? 'Créer un compte' : 'Se connecter')}</h2>
             {!isResetPassword && (
               <p>
-                {isSignUp 
-                  ? 'Déjà un compte ?' 
-                  : 'Pas encore de compte ?'}
-                <button 
-                  className="text-button" 
+                {isSignUp ? 'Déjà un compte ?' : 'Pas encore de compte ?'}
+                <button
+                  className="text-button"
                   onClick={() => {
                     setIsSignUp(!isSignUp);
                     setIsResetPassword(false);
                   }}
                 >
-                  {isSignUp ? 'Se connecter' : 'S\'inscrire'}
+                  {isSignUp ? 'Se connecter' : "S'inscrire"}
                 </button>
               </p>
             )}
@@ -115,8 +110,7 @@ const AuthPage = () => {
                     required
                   />
                 </div>
-                
-                
+
                 {isSignUp && (
                   <>
                     <div className="form-group">
@@ -134,18 +128,20 @@ const AuthPage = () => {
                 )}
               </>
             )}
-            
+
             <button type="submit" className="btn btn-primary btn-block">
-              {isResetPassword 
-                ? 'Envoyer les instructions' 
-                : (isSignUp ? 'Créer un compte' : 'Se connecter')}
+              {isResetPassword
+                ? 'Envoyer les instructions'
+                : isSignUp
+                ? 'Créer un compte'
+                : 'Se connecter'}
             </button>
           </form>
 
           {!isSignUp && !isResetPassword && (
             <div className="auth-footer">
-              <button 
-                className="text-button" 
+              <button
+                className="text-button"
                 onClick={() => {
                   setIsResetPassword(true);
                   setIsSignUp(false);
@@ -158,8 +154,8 @@ const AuthPage = () => {
 
           {isResetPassword && (
             <div className="auth-footer">
-              <button 
-                className="text-button" 
+              <button
+                className="text-button"
                 onClick={() => {
                   setIsResetPassword(false);
                   setIsSignUp(false);
@@ -171,7 +167,7 @@ const AuthPage = () => {
           )}
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };

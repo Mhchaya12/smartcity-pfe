@@ -5,18 +5,8 @@ import Charts from '../../components/components_dash_admin/Charts/Charts';
 import Alerts from '../../components/components_dash_admin/Alerts/Alertsad';
 import Metrics from '../../components/components_dash_admin/Metrics/Metrics';
 import WasteLevels from '../../components/components_dash_admin/WasteLevels/WasteLevels';
+import { initialSensorHistory } from '../../data/adminData'; // Import from adminData.js
 import '../../styles/Dashboard.css';
-
-const initialSensorHistory = [
-  { date: '18 mars 2025, 08:15', id: 'D01', type: 'Déchets', location: 'Avenue Habib-Bourguiba', data: 'Niveau: 85%', status: 'Alerte' },
-  { date: '17 mars 2025, 16:45', id: 'D12', type: 'Déchets', location: 'Rue de Marseille', data: 'Niveau: 30%', status: 'Normal' },
-  { date: '18 mars 2025, 07:00', id: 'E03', type: 'Énergie', location: 'Mairie', data: '120 kWh', status: 'Normal' },
-  { date: '17 mars 2025, 14:00', id: 'E07', type: 'Énergie', location: 'Bibliothèque', data: '250 kWh', status: 'Alerte' },
-  { date: '18 mars 2025, 09:00', id: 'T02', type: 'Transport', location: 'Avenue Centrale', data: '450 véhicules/h', status: 'Normal' },
-  { date: '17 mars 2025, 17:30', id: 'T05', type: 'Transport', location: 'Boulevard Ouest', data: '800 véhicules/h', status: 'Alerte' },
-  { date: '18 mars 2025, 03:15', id: 'S01', type: 'Sécurité', location: 'Parking', data: 'Mouvement détecté', status: 'Alerte' },
-  { date: '16 mars 2025, 23:45', id: 'S07', type: 'Sécurité', location: 'Rue de Rome', data: 'Activité inhabituelle', status: 'Alerte critique' },
-];
 
 const Dashboard = () => {
   const [donneesCapteurs, setDonneesCapteurs] = useState(initialSensorHistory);
