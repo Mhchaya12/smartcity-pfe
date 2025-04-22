@@ -28,9 +28,9 @@ const Users = () => {
 
   // Filter users based on search term
   const filteredUsers = users.filter(user => 
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.username?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (user.role?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
   // Handle form input changes

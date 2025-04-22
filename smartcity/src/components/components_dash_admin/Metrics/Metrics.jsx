@@ -5,44 +5,37 @@ import {
   faCar,
   faTrash,
   faUserShield,
-  faArrowUp,
-  faArrowDown,
 } from '@fortawesome/free-solid-svg-icons';
-import { metricsData } from '../../../data/adminData'; // Import from adminData.js
+import { metricsData } from '../../../data/adminData';
 import './Metrics.css';
-
-// Map string icon names to actual icon objects
-const iconMap = {
-  faBolt,
-  faCar,
-  faTrash,
-  faUserShield,
-};
 
 const Metrics = () => {
   return (
     <div className="metrics">
       <div className="metric-group">
         <div className="metric-cards">
-          {metricsData.map((group, index) => (
+          {metricsData.map((metric, index) => (
             <div key={index} className="metric-card">
               <div className="metric-header">
-                <h3 className="metric-title">{group.primaryMetric.title}</h3>
-                <div className={`metric-icon ${group.primaryMetric.iconClass}-icon`}>
-                  <FontAwesomeIcon icon={iconMap[group.primaryMetric.icon]} />
+                <h3 className="metric-title">{metric.primaryMetric.title}</h3>
+                <div className="metric-icon">
+                  <FontAwesomeIcon 
+                    icon={
+                      metric.type === 'Énergie' ? faBolt :
+                      metric.type === 'Transport' ? faCar :
+                      metric.type === 'Déchets' ? faTrash :
+                      faUserShield
+                    } 
+                  />
                 </div>
               </div>
-              <div className="metric-value">{group.primaryMetric.value}</div>
-              <div className="metric-label">{group.primaryMetric.label}</div>
-              <div
-                className={`metric-trend ${
-                  group.primaryMetric.percentage >= 0 ? 'trend-up' : 'trend-down'
-                }`}
-              >
-                <FontAwesomeIcon
-                  icon={group.primaryMetric.percentage >= 0 ? faArrowUp : faArrowDown}
-                />{' '}
-                {Math.abs(group.primaryMetric.percentage)}% {group.primaryMetric.comparison}
+              <div className="metric-value">{metric.primaryMetric.value}</div>
+              <div className="metric-label">{metric.primaryMetric.label}</div>
+              <div className="metric-comparison">
+                <span className={`metric-percentage ${metric.primaryMetric.percentage >= 0 ? 'positive' : 'negative'}`}>
+                  {metric.primaryMetric.percentage > 0 ? '+' : ''}{metric.primaryMetric.percentage}%
+                </span>
+                <span className="metric-comparison-text">{metric.primaryMetric.comparison}</span>
               </div>
             </div>
           ))}

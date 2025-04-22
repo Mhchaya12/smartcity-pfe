@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import './Header.css';
 
 const Header = ({ title, subtitle }) => {
@@ -55,18 +55,11 @@ const Header = ({ title, subtitle }) => {
                 <p className="email">analy@smartcity.com</p>
                 <span className="admin-badge">Analyste</span>
               </div>
-              
-              <div className="dropdown-menu">
-                <div className="menu-item">
-                  <FontAwesomeIcon icon={faUser} className="menu-icon" />
-                  <span>Profil</span>
-                </div>
                 
                 <div className="menu-item">
                   <FontAwesomeIcon icon={faSignOutAlt} className="menu-icon" />
                   <span>Se déconnecter</span>
                 </div>
-              </div>
             </div>
           )}
         </div>

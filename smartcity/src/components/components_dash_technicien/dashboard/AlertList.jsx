@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getTimeAgo } from "../../../data/mockData";
+import { getTimeAgo, AlertType } from "../../../data/sharedData";
 import { Bell, BellRing, BellDot, Check } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';

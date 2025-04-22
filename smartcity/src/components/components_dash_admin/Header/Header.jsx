@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import './Header.css';
 
 const Header = ({ title, subtitle }) => {
@@ -29,7 +29,7 @@ const Header = ({ title, subtitle }) => {
       <div className="page-title">
         <h1>{title}</h1>
         <div className="page-subtitle">
-          {subtitle || "Bienvenue, Chayma ! Voici les informations d'aujourd'hui."}
+          {subtitle || "Bienvenue, Analyste ! Voici les informations."}
         </div>
       </div>
 
@@ -43,30 +43,23 @@ const Header = ({ title, subtitle }) => {
           <div className="profile-container" onClick={toggleDropdown}>
             <div className="avatar">CM</div>
             <div className="user-info">
-              <div className="name">Chayma Mhalhli</div>
-              <div className="role">Administrateur</div>
+              <div className="name">Alie</div>
+              <div className="role">Analyste</div>
             </div>
           </div>
           
           {isDropdownOpen && (
             <div className="profile-dropdown">
               <div className="dropdown-header">
-                <h3>Administrateur</h3>
-                <p className="email">admin@smartcity.com</p>
-                <span className="admin-badge">Administrateur</span>
+                <h3>Analyste</h3>
+                <p className="email">analy@smartcity.com</p>
+                <span className="admin-badge">Analyste</span>
               </div>
-              
-              <div className="dropdown-menu">
-                <div className="menu-item">
-                  <FontAwesomeIcon icon={faUser} className="menu-icon" />
-                  <span>Profil</span>
-                </div>
                 
                 <div className="menu-item">
                   <FontAwesomeIcon icon={faSignOutAlt} className="menu-icon" />
                   <span>Se déconnecter</span>
                 </div>
-              </div>
             </div>
           )}
         </div>

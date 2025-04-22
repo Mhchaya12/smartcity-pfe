@@ -5,13 +5,20 @@ import Charts from '../../components/components_dash_admin/Charts/Charts';
 import Alerts from '../../components/components_dash_admin/Alerts/Alertsad';
 import Metrics from '../../components/components_dash_admin/Metrics/Metrics';
 import WasteLevels from '../../components/components_dash_admin/WasteLevels/WasteLevels';
-import { initialSensorHistory } from '../../data/adminData'; // Import from adminData.js
+import { initialSensorHistory, SensorStatus } from '../../data/adminData'; // Import from adminData.js
 import '../../styles/Dashboard.css';
 
 const Dashboard = () => {
-  const [donneesCapteurs, setDonneesCapteurs] = useState(initialSensorHistory);
+  const [donneesCapteurs, setDonneesCapteurs] = useState(
+    initialSensorHistory.map(item => ({
+      ...item,
+      date: item.timestamp.toLocaleString('fr-FR'),
+      data: `${item.value || 'N/A'} ${item.unit || ''}`,
+      status: item.status
+    }))
+  );
   const [historiquesActifs, setHistoriquesActifs] = useState(
-    initialSensorHistory.filter(item => item.status !== 'Normal').map(item => ({
+    initialSensorHistory.filter(item => item.status !== SensorStatus.OPERATIONAL).map(item => ({
       id: item.id,
       titre: `${item.type} - ${item.location}`,
       ...item,
@@ -32,18 +39,10 @@ const Dashboard = () => {
     }
   };
 
-  const historiquesActifsFiltres = historiquesActifs.filter(historique =>
-    historique.titre.toLowerCase().includes(termeRecherche.toLowerCase())
-  );
-
-  const historiquesTraitesFiltres = historiquesTraites.filter(historique =>
-    historique.titre.toLowerCase().includes(termeRecherche.toLowerCase())
-  );
-
   const donneesFiltrees = donneesCapteurs.filter(item =>
-    item.type.toLowerCase().includes(termeRecherche.toLowerCase()) ||
-    item.location.toLowerCase().includes(termeRecherche.toLowerCase()) ||
-    item.data.toLowerCase().includes(termeRecherche.toLowerCase())
+    (item.type && item.type.toLowerCase().includes(termeRecherche.toLowerCase())) ||
+    (item.location && item.location.toLowerCase().includes(termeRecherche.toLowerCase())) ||
+    (item.data && item.data.toLowerCase().includes(termeRecherche.toLowerCase()))
   );
 
   const gererChangementVue = () => {
@@ -53,6 +52,23 @@ const Dashboard = () => {
 
   const gererRecherche = (e) => {
     setTermeRecherche(e.target.value);
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case SensorStatus.OPERATIONAL:
+        return 'status-normal';
+      case SensorStatus.WARNING:
+        return 'status-warning';
+      case SensorStatus.CRITICAL:
+        return 'status-critical';
+      case SensorStatus.MAINTENANCE:
+        return 'status-maintenance';
+      case SensorStatus.OFFLINE:
+        return 'status-offline';
+      default:
+        return 'status-normal';
+    }
   };
 
   return (
@@ -113,7 +129,9 @@ const Dashboard = () => {
                     <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.type}</td>
                     <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.location}</td>
                     <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.data}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.status}</td>
+                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                      <span className={getStatusClass(item.status)}>{item.status}</span>
+                    </td>
                   </tr>
                 ))}
               </tbody>

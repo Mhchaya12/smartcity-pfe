@@ -86,20 +86,84 @@ body {
   transform: translateY(0);
 }
 
-/* Historique view */
+/* Styles pour les statuts dans le tableau d'historique */
+.status-normal {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status-warning {
+  background-color: #fff8e1;
+  color: #f57c00;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status-critical {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status-maintenance {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status-offline {
+  background-color: #f5f5f5;
+  color: #616161;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Styles pour le tableau d'historique */
 .historique-view {
-  background-color: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
 }
 
 .historique-view h2 {
-  color: var(--gray-800);
-  font-size: 1.5rem;
   margin-top: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-size: 20px;
+}
+
+.historique-view table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.historique-view th {
+  background-color: #f8f9fa;
   font-weight: 600;
+  text-align: left;
+  padding: 12px 8px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.historique-view td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.historique-view tr:hover {
+  background-color: #f8f9fa;
 }
 
 /* Table styling */

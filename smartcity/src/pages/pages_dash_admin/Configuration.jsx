@@ -15,11 +15,11 @@ const Configuration = () => {
   const [peakEvening, setPeakEvening] = useState(initialConfigSettings.peakEvening);
   const [trafficInterval, setTrafficInterval] = useState(initialConfigSettings.trafficInterval);
   const [wasteThreshold, setWasteThreshold] = useState(initialConfigSettings.wasteThreshold);
-  const [wasteFrequency, setWasteFrequency] = useState(initialConfigSettings.wasteFrequency);
+  const [wasteFrequency, setWasteFrequency] = useState(initialConfigSettings.wasteFrequency || 'QUOTIDIENNE');
   const [wasteTime, setWasteTime] = useState(initialConfigSettings.wasteTime);
   const [securityIncidentThreshold, setSecurityIncidentThreshold] = useState(initialConfigSettings.securityIncidentThreshold);
-  const [securityCheckFrequency, setSecurityCheckFrequency] = useState(initialConfigSettings.securityCheckFrequency);
-  const [securityCriticalLevel, setSecurityCriticalLevel] = useState(initialConfigSettings.securityCriticalLevel);
+  const [securityCheckFrequency, setSecurityCheckFrequency] = useState(initialConfigSettings.securityCheckFrequency || '15 minutes');
+  const [securityCriticalLevel, setSecurityCriticalLevel] = useState(initialConfigSettings.securityCriticalLevel || '2');
 
   // État pour l'historique et l'affichage
   const [history, setHistory] = useState([]);
@@ -234,9 +234,9 @@ const Configuration = () => {
                         onChange={(e) => setSecurityCheckFrequency(e.target.value)}
                         label="Fréquence de vérification"
                       >
-                        <MenuItem value="5 minutes">5 minutes</MenuItem>
-                        <MenuItem value="15 minutes">15 minutes</MenuItem>
-                        <MenuItem value="30 minutes">30 minutes</MenuItem>
+                        <MenuItem value="5">5 minutes</MenuItem>
+                        <MenuItem value="15">15 minutes</MenuItem>
+                        <MenuItem value="30">30 minutes</MenuItem>
                       </Select>
                     </FormControl>
                   </div>
@@ -248,10 +248,10 @@ const Configuration = () => {
                         onChange={(e) => setSecurityCriticalLevel(e.target.value)}
                         label="Seuil critique"
                       >
-                        <MenuItem value={2}>2</MenuItem>
-                        <MenuItem value={5}>5</MenuItem>
-                        <MenuItem value={10}>10</MenuItem>
-                        <MenuItem value={15}>15</MenuItem>
+                        <MenuItem value="2">2</MenuItem>
+                        <MenuItem value="5">5</MenuItem>
+                        <MenuItem value="10">10</MenuItem>
+                        <MenuItem value="15">15</MenuItem>
                       </Select>
                     </FormControl>
                   </div>

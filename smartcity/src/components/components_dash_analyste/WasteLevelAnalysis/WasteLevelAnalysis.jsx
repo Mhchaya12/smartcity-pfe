@@ -16,7 +16,7 @@ const WasteLevelAnalysis = forwardRef((props, ref) => {
 
   // Filter data based on selected zone
   const zonesData = selectedZone === 'all' ? zones : [selectedZone];
-  const levelsData = zonesData.map((zone) => wasteLevels[zone]);
+  const levelsData = zonesData.map((zone) => wasteLevels[zone] || 0);
 
   // Chart data
   const chartData = {
