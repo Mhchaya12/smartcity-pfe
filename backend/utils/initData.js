@@ -4,6 +4,10 @@ import Metrics from '../models/Metrics.js';
 import ChartData from '../models/ChartData.js';
 import Config from '../models/Config.js';
 import User from '../models/userModel.js';
+import Location from '../models/Location.js';
+import Alert from '../models/Alert.js';
+import MaintenanceTask from '../models/MaintenanceTask.js';
+import Rapport from "../models/Report";
 import { hash } from 'bcrypt';
 
 const initData = async () => {
@@ -203,6 +207,170 @@ const initData = async () => {
   };
   if (!await User.findOne({ email: admin.email })) {
     await new User(admin).save();
+  }
+
+  // Initialiser les locations
+  const locations = [
+    {
+      id: 'loc-001',
+      name: 'Centre-ville',
+      type: 'urban',
+      coordinates: {
+        latitude: 36.8065,
+        longitude: 10.1815
+      },
+      address: 'Avenue Habib Bourguiba, Tunis',
+      description: 'Centre-ville principal avec forte densité de population',
+      status: 'active'
+    },
+    {
+      id: 'loc-002',
+      name: 'Zone commerciale',
+      type: 'commercial',
+      coordinates: {
+        latitude: 36.8489,
+        longitude: 10.2648
+      },
+      address: 'Rue de Marseille, Tunis',
+      description: 'Zone commerciale avec nombreux magasins et restaurants',
+      status: 'active'
+    },
+    {
+      id: 'loc-003',
+      name: 'Parc public',
+      type: 'residential',
+      coordinates: {
+        latitude: 36.8195,
+        longitude: 10.1657
+      },
+      address: 'Avenue Mohammed V, Tunis',
+      description: 'Parc public avec espaces verts et aires de loisirs',
+      status: 'active'
+    },
+    {
+      id: 'loc-004',
+      name: 'Zone industrielle',
+      type: 'industrial',
+      coordinates: {
+        latitude: 36.7325,
+        longitude: 10.2301
+      },
+      address: 'Rue de Rome, Tunis',
+      description: 'Zone industrielle avec usines et entrepôts',
+      status: 'active'
+    }
+  ];
+
+  for (const location of locations) {
+    if (!await Location.findOne({ id: location.id })) {
+      await new Location(location).save();
+    }
+  }
+
+  // Initialiser les alertes
+  const alerts = [
+    {
+      id: 'A001',
+      type: 'critical',
+      message: 'Niveau de déchets critique détecté',
+      location: 'Zone commerciale',
+      timestamp: new Date('2024-03-18T07:30:00'),
+      sensorId: 'D01',
+      resolved: false
+    },
+    {
+      id: 'A002',
+      type: 'warning',
+      message: 'Trafic dense détecté',
+      location: 'Avenue principale',
+      timestamp: new Date('2024-03-18T09:00:00'),
+      sensorId: 'T01',
+      resolved: false
+    },
+    {
+      id: 'A003',
+      type: 'info',
+      message: 'Maintenance préventive programmée',
+      location: 'Centre-ville',
+      timestamp: new Date('2024-03-18T08:00:00'),
+      sensorId: 'E01',
+      resolved: true
+    },
+    {
+      id: 'A004',
+      type: 'warning',
+      message: 'Consommation d\'énergie élevée',
+      location: 'Bibliothèque',
+      timestamp: new Date('2024-03-17T14:00:00'),
+      sensorId: 'E07',
+      resolved: false
+    },
+    {
+      id: 'A005',
+      type: 'critical',
+      message: 'Activité inhabituelle détectée',
+      location: 'Zone Industrielle',
+      timestamp: new Date('2024-03-16T23:45:00'),
+      sensorId: 'S07',
+      resolved: false
+    }
+  ];
+
+  for (const alert of alerts) {
+    if (!await Alert.findOne({ id: alert.id })) {
+      await new Alert(alert).save();
+    }
+  }
+
+  // Initialiser les tâches de maintenance
+  const maintenanceTasks = [
+    {
+      id: 'm001',
+      sensorId: 'T01',
+      sensorName: 'Capteur de flux de transport',
+      taskType: 'replacement',
+      dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), // 2 jours à partir de maintenant
+      priority: 'high',
+      status: 'pending',
+      notes: 'Remplacement préventif du capteur de trafic'
+    },
+    {
+      id: 'm002',
+      sensorId: 'E01',
+      sensorName: 'Capteur de consommation d\'énergie',
+      taskType: 'repair',
+      dueDate: new Date(Date.now() + 1000 * 60 * 60 * 12), // 12 heures à partir de maintenant
+      priority: 'critical',
+      status: 'in_progress',
+      assignedTo: 'Technicien 1',
+      notes: 'Défaillance détectée, l\'unité ne transmet pas de données'
+    },
+    {
+      id: 'm003',
+      sensorId: 'D01',
+      sensorName: 'Capteur de niveau de déchets',
+      taskType: 'calibration',
+      dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5), // 5 jours à partir de maintenant
+      priority: 'medium',
+      status: 'pending',
+      notes: 'Calibration régulière requise'
+    },
+    {
+      id: 'm004',
+      sensorId: 'S01',
+      sensorName: 'Capteur de sécurité',
+      taskType: 'inspection',
+      dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 jour à partir de maintenant
+      priority: 'low',
+      status: 'pending',
+      notes: 'Inspection de routine'
+    }
+  ];
+
+  for (const task of maintenanceTasks) {
+    if (!await MaintenanceTask.findOne({ id: task.id })) {
+      await new MaintenanceTask(task).save();
+    }
   }
 };
 

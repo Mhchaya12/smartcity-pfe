@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DashboardLayout } from '../../components/components_dash_technicien/layout/DashboardLayout';
 import { AlertList } from '../../components/components_dash_technicien/dashboard/AlertList';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/components_dash_technicien/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/components_dash_technicien/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/components_dash_technicien/ui/tabs';
 import { Input } from '../../components/components_dash_technicien/ui/input';
 import { Button } from '../../components/components_dash_technicien/ui/button';
 import { useToast } from '../../components/components_dash_technicien/ui/use-toast';

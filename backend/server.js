@@ -15,6 +15,7 @@ import reportRoutes from './routes/reportRoutes.js';
 import maintenanceRoutes from './routes/maintenanceRoutes.js';
 import configRoutes from './routes/configRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import locationRoutes from './routes/locationRoutes.js';
 import { startRealTimeUpdates } from './services/realTimeService.js';
 import initData from './utils/initData.js';
 
@@ -35,6 +36,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/locations', locationRoutes);
 
 // Validate MONGODB_URI
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/smartcity';
