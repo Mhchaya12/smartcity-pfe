@@ -1,82 +1,100 @@
+import express from "express";
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-dotenv.config({ path: './.env' }); // Explicitly specify .env path
-import express, { json } from 'express';
-import { connect } from 'mongoose';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
+import userRouter from "./routes/userRouter.js";
+import alertRouter from "./routes/alertRouter.js";
+import maintenanceRouter from "./routes/maintenanceRouter.js";
+import configurationRouter from "./routes/configurationRouter.js";
+import sensorDechetRouter from "./routes/sensorDechetRouter.js";
+import sensorEnergieRouter from "./routes/sensorEnergieRouter.js";
+import sensorSecuriteRouter from "./routes/sensorSecuriteRouter.js";
+import sensorTransportRouter from "./routes/sensorTransportRouter.js";
+import startDataGeneration from './services/sensorDataGenerator.js';
 import { Server } from 'socket.io';
-import { createServer } from 'http';
-import sensorRoutes from './routes/sensorRoutes.js';
-import alertRoutes from './routes/alertRoutes.js';
-import metricRoutes from './routes/metricRoutes.js';
-import chartRoutes from './routes/chartRoutes.js';
-import reportRoutes from './routes/reportRoutes.js';
-import maintenanceRoutes from './routes/maintenanceRoutes.js';
-import configRoutes from './routes/configRoutes.js';
-import authRoutes from './routes/authRoutes.js';
-import locationRoutes from './routes/locationRoutes.js';
-import { startRealTimeUpdates } from './services/realTimeService.js';
-import initData from './utils/initData.js';
+import http from 'http';
+import SensorDechet from './models/sensorDechetModel.js';
+import SensorEnergie from './models/sensorEnergieModel.js';
+import SensorSecurite from './models/sensorSecuriteModel.js';
+import SensorTransport from './models/sensorTransportModel.js';
 
+dotenv.config();
 const app = express();
-const server = createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
 
-app.use(cors());
-app.use(helmet());
-app.use(morgan('dev'));
-app.use(json());
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/sensors', sensorRoutes);
-app.use('/api/alerts', alertRoutes);
-app.use('/api/metrics', metricRoutes);
-app.use('/api/charts', chartRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/config', configRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/locations', locationRoutes);
-
-// Validate MONGODB_URI
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/smartcity';
-if (!process.env.MONGODB_URI) {
-  console.warn('MONGODB_URI not defined in .env, using default:', MONGODB_URI);
-}
-
-// MongoDB Connection
-connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(async () => {
-    console.log('Connected to MongoDB');
-    console.log('MongoDB URI:', MONGODB_URI);
-    await initData();
-    startRealTimeUpdates(io);
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1); // Exit on connection failure
-  });
-
-// Server Start with Port Conflict Handling
-const PORT = process.env.PORT || 5050;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// Handle server errors (e.g., EADDRINUSE)
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use. Try a different port or free port ${PORT}.`);
-    process.exit(1);
-  } else {
-    console.error('Server error:', err);
-  }
+// Connexion à MongoDB
+mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/smartcity', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('Connected to MongoDB successfully');
+  // Démarrer la génération de données en temps réel après la connexion à MongoDB
+  startDataGeneration();
+}).catch((err) => {
+  console.error('MongoDB connection error:', err);
 });
 
-// Graceful Shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Closing server...');
-  server.close(() => {
-    mongoose.connection.close();
-    console.log('Server and MongoDB connection closed.');
-    process.exit(0);
+// Routes
+app.use('/api/users', userRouter);
+app.use('/api/alerts', alertRouter);
+app.use('/api/maintenance', maintenanceRouter);
+app.use('/api/configuration', configurationRouter);
+app.use('/api/sensors/dechets', sensorDechetRouter);
+app.use('/api/sensors/energie', sensorEnergieRouter);
+app.use('/api/sensors/securite', sensorSecuriteRouter);
+app.use('/api/sensors/transport', sensorTransportRouter);
+
+// Route de base
+app.get('/', (req, res) => {
+  res.send('Server is ready');
+});
+
+// Gestion des erreurs
+app.use((err, req, res, next) => {
+  res.status(500).send({ message: err.message });
+});
+
+// Create the HTTP server
+const port = process.env.PORT || 5050;
+const server = http.createServer(app);
+server.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
+
+const io = new Server(server);
+
+// Fonction pour récupérer les données des capteurs
+const getSensorData = async () => {
+  try {
+    const dechetSensors = await SensorDechet.find();
+    const energieSensors = await SensorEnergie.find();
+    const securiteSensors = await SensorSecurite.find();
+    const transportSensors = await SensorTransport.find();
+
+    return {
+      dechets: dechetSensors,
+      energie: energieSensors,
+      securite: securiteSensors,
+      transport: transportSensors
+    };
+  } catch (error) {
+    console.error('Erreur lors de la récupération des données des capteurs:', error);
+    return {};
+  }
+};
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  // Émettre les données des capteurs toutes les 10 secondes
+  setInterval(async () => {
+    const sensorData = await getSensorData();
+    socket.emit('sensorData', sensorData);
+  }, 10000);
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
   });
 });

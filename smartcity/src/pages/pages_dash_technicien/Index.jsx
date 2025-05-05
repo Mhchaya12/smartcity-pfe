@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DashboardLayout } from '../../components/components_dash_technicien/layout/DashboardLayout';
 import { AlertList } from '../../components/components_dash_technicien/dashboard/AlertList';
-import { SensorStatus } from '../../components/components_dash_technicien/dashboard/SensorStatus';
+// import { SensorStatus } from '../../components/components_dash_technicien/dashboard/SensorStatus';
 import { MaintenancePlanner } from '../../components/components_dash_technicien/dashboard/MaintenancePlanner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/components_dash_technicien/ui/card';
 import { Button } from '../../components/components_dash_technicien/ui/button';

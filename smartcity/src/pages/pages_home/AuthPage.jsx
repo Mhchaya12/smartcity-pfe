@@ -1,36 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '../../components/components_home/Navbar';
 import Footer from '../../components/components_home/Footer';
-import { authentification } from '../../data/homeData'; // Named import
+import { signin, register } from '../../actions/userActions';
 import './AuthPage.css';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const userSignin = useSelector((state) => state.userSignin);
+  const { userInfo, loading, error } = userSignin;
+
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [isResetPassword, setIsResetPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('administrator');
 
-  const [formData, setFormData] = useState(authentification);
+  const redirect = location.search ? location.search.split('=')[1] : '/';
 
   useEffect(() => {
-    // Check if formData has any non-empty fields (optional, adjust as needed)
-    if (!formData.email && !formData.password && !formData.name && !formData.confirmPassword) {
-      return;
+    if (userInfo) {
+      navigate(redirect);
     }
-    console.log('function component did update');
-  }, [formData]); // Added dependency array
+  }, [navigate, redirect, userInfo]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    if (name === 'email') {
+      setEmail(value);
+    } else if (name === 'password') {
+      setPassword(value);
+    } else if (name === 'name') {
+      setName(value);
+    } else if (name === 'confirmPassword') {
+      setConfirmPassword(value);
+    } else if (name === 'role') {
+      setRole(value);
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    if (isSignUp) {
+      if (password !== confirmPassword) {
+        alert('Les mots de passe ne correspondent pas');
+        return;
+      }
+      dispatch(register(name, email, password, role));
+    } else {
+      dispatch(signin(email, password));
+    }
   };
 
   return (
@@ -56,6 +81,9 @@ const AuthPage = () => {
             )}
           </div>
 
+          {error && <div className="error-message">{error}</div>}
+          {loading && <div className="loading-message">Chargement...</div>}
+
           <form className="auth-form" onSubmit={handleSubmit}>
             {isResetPassword ? (
               <>
@@ -65,7 +93,7 @@ const AuthPage = () => {
                     type="email"
                     id="email"
                     name="email"
-                    value={formData.email}
+                    value={email}
                     onChange={handleInputChange}
                     required
                   />
@@ -74,17 +102,32 @@ const AuthPage = () => {
             ) : (
               <>
                 {isSignUp && (
-                  <div className="form-group">
-                    <label htmlFor="name">Nom complet</label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
+                  <>
+                    <div className="form-group">
+                      <label htmlFor="name">Nom complet</label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={name}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="role">Rôle</label>
+                      <select
+                        id="role"
+                        name="role"
+                        value={role}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="analyst">Analyste</option>
+                        <option value="technicien">Technicien</option>
+                      </select>
+                    </div>
+                  </>
                 )}
 
                 <div className="form-group">
@@ -93,7 +136,7 @@ const AuthPage = () => {
                     type="email"
                     id="email"
                     name="email"
-                    value={formData.email}
+                    value={email}
                     onChange={handleInputChange}
                     required
                   />
@@ -105,31 +148,29 @@ const AuthPage = () => {
                     type="password"
                     id="password"
                     name="password"
-                    value={formData.password}
+                    value={password}
                     onChange={handleInputChange}
                     required
                   />
                 </div>
 
                 {isSignUp && (
-                  <>
-                    <div className="form-group">
-                      <label htmlFor="confirmPassword">Confirmer le mot de passe</label>
-                      <input
-                        type="password"
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                  </>
+                  <div className="form-group">
+                    <label htmlFor="confirmPassword">Confirmer le mot de passe</label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={confirmPassword}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
                 )}
               </>
             )}
 
-            <button type="submit" className="btn btn-primary btn-block">
+            <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
               {isResetPassword
                 ? 'Envoyer les instructions'
                 : isSignUp

@@ -6,8 +6,8 @@ import {
   sharedAlerts,
   getStatusColor,
   getSensorTypeIcon
-} from './sharedData';
-
+} from './sharedData.js';
+import bcrypt from 'bcryptjs';
 // Réexporter les types et fonctions importés
 export { 
   SensorType,
@@ -280,3 +280,16 @@ export const initialUsers = [
     lastLogin: new Date('2024-03-09T16:45:00')
   }
 ];
+
+const data = {
+  users: [{
+    name: "Admin User",
+    email: "admin@example.com",
+    password: bcrypt.hashSync("password", 8),
+    role: "administrator",
+    status: "active",
+    lastLogin: new Date()
+  }]
+};
+
+export default data;

@@ -7,7 +7,7 @@ import { useToast } from './hooks/use-toast';
 import Index from './pages/pages_dash_technicien/Index';
 import Alerts from './pages/pages_dash_technicien/Alerts';
 import Maintenance from './pages/pages_dash_technicien/Maintenance';
-import Sensors from './pages/pages_dash_technicien/Sensors';
+// import Sensors from './pages/pages_dash_technicien/Sensors';
 import NotFound from './pages/pages_dash_technicien/NotFound';
 
 import Dashboard from './pages/pages_dash_admin/Dashboard';
@@ -35,7 +35,7 @@ function App() {
         <Route path="/technicien" element={<Index />} />
         <Route path="/technicien/alerts" element={<Alerts />} />
         <Route path="/technicien/maintenance" element={<Maintenance />} />
-        <Route path="/technicien/sensors" element={<Sensors />} />
+        {/* <Route path="/technicien/sensors" element={<Sensors />} /> */}
         <Route path="/technicien/*" element={<NotFound />} />
 
         <Route path="/" element={<HomePages />} />
