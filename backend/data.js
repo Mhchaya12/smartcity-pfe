@@ -1,0 +1,203 @@
+import bcrypt from 'bcryptjs';
+
+const data = {
+  users: [
+    {
+      name: 'chayma User',
+      email: 'admin@smartcity.com',
+      password: bcrypt.hashSync('admin123', 8),
+      role: 'administrator',
+      status: 'active',
+      lastLogin: new Date()
+    },
+    {
+      name: 'John Analyst',
+      email: 'analyst@smartcity.com',
+      password: bcrypt.hashSync('analyst123', 8),
+      role: 'analyst',
+      status: 'active',
+      lastLogin: new Date()
+    },
+    {
+      name: 'Mike Technician',
+      email: 'tech@smartcity.com',
+      password: bcrypt.hashSync('tech123', 8),
+      role: 'technicien',
+      status: 'active',
+      lastLogin: new Date()
+    }
+  ],
+  sensorDechets: [
+    {
+      localisation: 'Zone Nord, Rue Principale',
+      niveaux_remplissage: 75,
+      status: 'warning',
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 75
+    },
+    {
+      localisation: 'Zone Sud, Avenue Centrale',
+      niveaux_remplissage: 45,
+      status: 'operational',
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 45
+    },
+    {
+      localisation: 'Zone Est, Boulevard Commercial',
+      niveaux_remplissage: 90,
+      status: 'critical',
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 90
+    }
+  ],
+  sensorEnergies: [
+    {
+      localisation: 'Zone Nord, Rue Principale',
+      consommation: 2500,
+      status: 'operational',
+      dernier_mise_a_jour: new Date(),
+      type: 'electricite'
+    },
+    {
+      localisation: 'Zone Sud, Avenue Centrale',
+      consommation: 1800,
+      status: 'warning',
+      dernier_mise_a_jour: new Date(),
+      type: 'electricite'
+    }
+  ],
+  sensorSecurites: [
+    {
+      localisation: 'Zone Nord, Rue Principale',
+      type: 'camera',
+      status: 'operational',
+      dernier_mise_a_jour: new Date(),
+      niveau_alerte: 'normal'
+    },
+    {
+      localisation: 'Zone Sud, Avenue Centrale',
+      type: 'capteur_mouvement',
+      status: 'warning',
+      dernier_mise_a_jour: new Date(),
+      niveau_alerte: 'eleve'
+    }
+  ],
+  sensorTransports: [
+    {
+      localisation: 'Zone Nord, Rue Principale',
+      type: 'traffic',
+      status: 'operational',
+      dernier_mise_a_jour: new Date(),
+      niveau_congestion: 'moyen'
+    },
+    {
+      localisation: 'Zone Sud, Avenue Centrale',
+      type: 'parking',
+      status: 'warning',
+      dernier_mise_a_jour: new Date(),
+      niveau_congestion: 'eleve'
+    }
+  ],
+  alerts: [
+    {
+      date: new Date(),
+      heure: "14:30",
+      etat: "critique",
+      description: "Niveau de remplissage des déchets critique",
+      local: "Zone Nord",
+      resolu: false,
+      sensorId: "65f1a2b3c4d5e6f7g8h9i0j1" // ID fictif, à remplacer par un vrai ID de capteur
+    },
+    {
+      date: new Date(),
+      heure: "15:45",
+      etat: "warning",
+      description: "Consommation énergétique élevée",
+      local: "Zone Sud",
+      resolu: true,
+      sensorId: "65f1a2b3c4d5e6f7g8h9i0j2" // ID fictif, à remplacer par un vrai ID de capteur
+    }
+  ],
+  systemUrbains: [
+    {
+      nom: 'Système de Gestion des Déchets',
+      type: 'dechet',
+      status: 'active',
+      date_derniere_mise_a_jour: new Date()
+    },
+    {
+      nom: 'Système de Surveillance',
+      type: 'securite',
+      status: 'active',
+      date_derniere_mise_a_jour: new Date()
+    }
+  ],
+  configurations: [
+    {
+      date: new Date(),
+      seuil_energie: 2000,
+      debut_pointe: "08:00",
+      fin_pointe: "18:00",
+      matin_pointe: "07:00",
+      soir_pointe: "19:00",
+      intervalle_trafic: 30,
+      seuil_dechet: 80,
+      frequence_deche: 24,
+      temps_collect_dechet: 120,
+      seuil_securite: 75,
+      frequence_controle_securite: 15,
+      niveau_critique_securite: 90
+    },
+    {
+      date: new Date(),
+      seuil_energie: 1800,
+      debut_pointe: "09:00",
+      fin_pointe: "17:00",
+      matin_pointe: "08:00",
+      soir_pointe: "18:00",
+      intervalle_trafic: 20,
+      seuil_dechet: 70,
+      frequence_deche: 12,
+      temps_collect_dechet: 90,
+      seuil_securite: 80,
+      frequence_controle_securite: 10,
+      niveau_critique_securite: 95
+    }
+  ],
+  reports: [
+    {
+      type: "quotidien",
+      dateGeneration: new Date(),
+      type_rapport: "performance",
+      titre_rapport: "Rapport de Performance Quotidien",
+      description: "Analyse des performances des systèmes urbains pour la journée"
+    },
+    {
+      type: "mensuel",
+      dateGeneration: new Date(),
+      type_rapport: "maintenance",
+      titre_rapport: "Rapport de Maintenance Mensuel",
+      description: "Synthèse des opérations de maintenance effectuées ce mois"
+    }
+  ],
+  maintenances: [
+    {
+      sensorId: "65f1a2b3c4d5e6f7g8h9i0j1", // ID fictif, à remplacer par un vrai ID de capteur
+      typeTask: "preventive",
+      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Dans 7 jours
+      priorite: "haute",
+      status: "planifiée",
+      description: "Maintenance préventive mensuelle du capteur de déchets"
+    },
+    {
+      sensorId: "65f1a2b3c4d5e6f7g8h9i0j2", // ID fictif, à remplacer par un vrai ID de capteur
+      typeTask: "corrective",
+      date: new Date(),
+      priorite: "urgente",
+      status: "en cours",
+      description: "Réparation du capteur de sécurité défectueux"
+    }
+  ]
+};
+
+export default data;

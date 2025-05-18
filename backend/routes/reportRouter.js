@@ -1,7 +1,23 @@
 import express from 'express';
+import expressAsyncHandler from 'express-async-handler';
+import data from '../data.js';
 import Report from '../models/reportModel.js';
 
 const router = express.Router();
+
+// Route pour initialiser la base de données avec des rapports
+router.get(
+  '/seed',
+  expressAsyncHandler(async (req, res) => {
+    try {
+      await Report.deleteMany({});
+      const createdReports = await Report.insertMany(data.reports);
+      res.send({ createdReports });
+    } catch (error) {
+      res.status(500).send({ message: 'Error during seed process', error: error.message });
+    }
+  })
+);
 
 // Créer un rapport
 router.post('/', async (req, res) => {

@@ -1,8 +1,20 @@
 import express from 'express';
 import expressAsyncHandler from 'express-async-handler';
+import data from '../data.js';
 import Configuration from '../models/configurationModel.js';
 
 const router = express.Router();
+
+// Route pour initialiser la base de données avec des configurations
+router.get('/seed', expressAsyncHandler(async (req, res) => {
+  try {
+    await Configuration.deleteMany({});
+    const createdConfigurations = await Configuration.insertMany(data.configurations);
+    res.send({ createdConfigurations });
+  } catch (error) {
+    res.status(500).send({ message: 'Error during seed process', error: error.message });
+  }
+}));
 
 // Créer une configuration
 router.post('/', expressAsyncHandler(async (req, res) => {
@@ -13,8 +25,8 @@ router.post('/', expressAsyncHandler(async (req, res) => {
 
 // Lire toutes les configurations
 router.get('/', expressAsyncHandler(async (req, res) => {
-  const configurations = await Configuration.find();
-  res.json(configurations);
+  const configurations = await Configuration.find({});
+  res.send(configurations);
 }));
 
 // Lire une configuration par ID

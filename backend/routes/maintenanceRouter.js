@@ -1,21 +1,17 @@
 import express from 'express';
 import expressAsyncHandler from 'express-async-handler';
-// import data from '../data copy/mockData.js';
+import data from '../data.js';
 import Maintenance from '../models/maintenanceModel.js';
 
 const router = express.Router();
 
-// Route pour initialiser la base de données avec des tâches de maintenance
+// Route pour initialiser la base de données avec des maintenances
 router.get('/seed', expressAsyncHandler(async (req, res) => {
   try {
-    console.log('Starting seed process for Maintenance...');
     await Maintenance.deleteMany({});
-    console.log('Previous Maintenance deleted');
-    const createdMaintenances = await Maintenance.insertMany(data.maintenanceTasks);
-    console.log('Maintenance created:', createdMaintenances);
+    const createdMaintenances = await Maintenance.insertMany(data.maintenances);
     res.send({ createdMaintenances });
   } catch (error) {
-    console.error('Seed error:', error);
     res.status(500).send({ message: 'Error during seed process', error: error.message });
   }
 }));
@@ -29,8 +25,8 @@ router.post('/', expressAsyncHandler(async (req, res) => {
 
 // Lire toutes les tâches de maintenance
 router.get('/', expressAsyncHandler(async (req, res) => {
-  const maintenances = await Maintenance.find();
-  res.json(maintenances);
+  const maintenances = await Maintenance.find({});
+  res.send(maintenances);
 }));
 
 // Lire une tâche de maintenance par ID

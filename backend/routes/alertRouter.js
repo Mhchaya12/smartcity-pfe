@@ -1,6 +1,6 @@
 import express from 'express';
 import expressAsyncHandler from 'express-async-handler';
-// import data from '../data copy/mockData.js';
+import data from '../data.js';
 import Alert from '../models/alertModel.js';
 
 const router = express.Router();
@@ -8,14 +8,10 @@ const router = express.Router();
 // Route pour initialiser la base de données avec des alertes
 router.get('/seed', expressAsyncHandler(async (req, res) => {
   try {
-    console.log('Starting seed process for Alert...');
     await Alert.deleteMany({});
-    console.log('Previous Alert deleted');
     const createdAlerts = await Alert.insertMany(data.alerts);
-    console.log('Alert created:', createdAlerts);
     res.send({ createdAlerts });
   } catch (error) {
-    console.error('Seed error:', error);
     res.status(500).send({ message: 'Error during seed process', error: error.message });
   }
 }));
@@ -29,8 +25,8 @@ router.post('/', expressAsyncHandler(async (req, res) => {
 
 // Lire toutes les alertes
 router.get('/', expressAsyncHandler(async (req, res) => {
-  const alerts = await Alert.find();
-  res.json(alerts);
+  const alerts = await Alert.find({});
+  res.send(alerts);
 }));
 
 // Lire une alerte par ID
