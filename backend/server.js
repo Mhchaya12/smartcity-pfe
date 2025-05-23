@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
+import cors from 'cors';
 import userRouter from "./routes/userRouter.js";
 import alertRouter from "./routes/alertRouter.js";
 import maintenanceRouter from "./routes/maintenanceRouter.js";
@@ -12,11 +13,19 @@ import sensorSecuriteRouter from "./routes/sensorSecuriteRouter.js";
 import sensorTransportRouter from "./routes/sensorTransportRouter.js";
 import systemUrbainRouter from "./routes/systemUrbainRouter.js";
 import reportRouter from "./routes/reportRouter.js";
-//import { initializeSocketIO } from './services/sensorService.js';
+import { initializeSocketIO } from './services/sensorService.js';
 import insertData from './services/insertdata.js';
 dotenv.config();
 const app = express();
 const httpServer = createServer(app);
+
+// Configuration CORS
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -29,10 +38,14 @@ mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/smartcity
 }).catch((err) => {
   console.error('MongoDB connection error:', err);
 });
-setInterval(insertData , 10000);
 
-//Initialize Socket.IO
-//initializeSocketIO(httpServer);
+// Initialize Socket.IO
+const io = initializeSocketIO(httpServer);
+
+// Update data every 10 seconds
+setInterval(() => {
+  insertData(io);
+}, 10000);
 
 // Routes
 app.use('/api/users', userRouter);

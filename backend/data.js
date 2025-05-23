@@ -11,7 +11,7 @@ const data = {
       lastLogin: new Date()
     },
     {
-      name: 'John Analyst',
+      name: 'Mayk Analyst',
       email: 'analyst@smartcity.com',
       password: bcrypt.hashSync('analyst123', 8),
       role: 'analyst',
@@ -29,74 +29,123 @@ const data = {
   ],
   sensorDechets: [
     {
-      localisation: 'Zone Nord, Rue Principale',
-      niveaux_remplissage: 75,
-      status: 'warning',
+      localisation: "Avenue Habib-Bourguiba",
+      niveaux_remplissage: 70,
+      status: "warning",
       dernier_mise_a_jour: new Date(),
-      pourcentage: 75
+      pourcentage: 70,
     },
     {
-      localisation: 'Zone Sud, Avenue Centrale',
-      niveaux_remplissage: 45,
-      status: 'operational',
+      localisation: "Rue de Marseille",
+      niveaux_remplissage: 10,
+      status: "operational",
       dernier_mise_a_jour: new Date(),
-      pourcentage: 45
+      pourcentage: 10,
     },
     {
-      localisation: 'Zone Est, Boulevard Commercial',
+      localisation: "Rue de Rome",
       niveaux_remplissage: 90,
-      status: 'critical',
+      status: "critical",
       dernier_mise_a_jour: new Date(),
-      pourcentage: 90
-    }
+      pourcentage: 90,
+    },
+    {
+      localisation: "Avenue Mohammed-V",
+      niveaux_remplissage: 50,
+      status: "operational",
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 50,
+    },
   ],
   sensorEnergies: [
     {
-      localisation: 'Zone Nord, Rue Principale',
-      consommation: 2500,
-      status: 'operational',
+      localisation: "Avenue Habib-Bourguiba",
+      seuilConsomation: 1000,
+      status: "operational",
       dernier_mise_a_jour: new Date(),
-      type: 'electricite'
+      pourcentage: 50,
     },
     {
-      localisation: 'Zone Sud, Avenue Centrale',
-      consommation: 1800,
-      status: 'warning',
+      localisation: "Rue de Marseille",
+      seuilConsomation: 2000,
+      status: "warning",
       dernier_mise_a_jour: new Date(),
-      type: 'electricite'
-    }
+      pourcentage: 80,
+    },
+    {
+      localisation: "Rue de Rome",
+      seuilConsomation: 300,
+      status: "maintenance",
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 25,
+    },
+    {
+      localisation: "Avenue Mohammed-V",
+      seuilConsomation: 1500,
+      status: "critical",
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 95,
+    },
   ],
   sensorSecurites: [
     {
-      localisation: 'Zone Nord, Rue Principale',
-      type: 'camera',
-      status: 'operational',
+      localisation: "Avenue Habib-Bourguiba",
+      anomalieDetection: 3,
+      status: "operational",
       dernier_mise_a_jour: new Date(),
-      niveau_alerte: 'normal'
+      pourcentage: 20,
     },
     {
-      localisation: 'Zone Sud, Avenue Centrale',
-      type: 'capteur_mouvement',
-      status: 'warning',
+      localisation: "Rue de Marseille",
+      anomalieDetection: 8,
+      status: "warning",
       dernier_mise_a_jour: new Date(),
-      niveau_alerte: 'eleve'
-    }
+      pourcentage: 60,
+    },
+    {
+      localisation: "Rue de Rome",
+      anomalieDetection: 15,
+      status: "critical",
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 90,
+    },
+    {
+      localisation: "Avenue Mohammed-V",
+      anomalieDetection: 0,
+      status: "operational",
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 10,
+    },
   ],
   sensorTransports: [
     {
-      localisation: 'Zone Nord, Rue Principale',
-      type: 'traffic',
-      status: 'operational',
+      localisation: "Avenue Habib-Bourguiba",
+      fluxActuelle: 200,
+      status: "operational",
       dernier_mise_a_jour: new Date(),
-      niveau_congestion: 'moyen'
+      pourcentage: 40,
     },
     {
-      localisation: 'Zone Sud, Avenue Centrale',
-      type: 'parking',
-      status: 'warning',
+      localisation: "Rue de Marseille",
+      fluxActuelle: 350,
+      status: "critical",
       dernier_mise_a_jour: new Date(),
-      niveau_congestion: 'eleve'
-    }
+      pourcentage: 85,
+    },
+    {
+      localisation: "Rue de Rome",
+      fluxActuelle: 100,
+      status: "operational",
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 30,
+    },
+    {
+      localisation: "Avenue Mohammed-V",
+      fluxActuelle: 50,
+      status: "maintenance",
+      dernier_mise_a_jour: new Date(),
+      pourcentage: 15,
+    },
   ],
   alerts: [
     {

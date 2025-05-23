@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/components_home/Navbar';
 import Footer from '../../components/components_home/Footer';
-import { signin, register } from '../../actions/userActions';
 import './AuthPage.css';
+import axios from 'axios';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const dispatch = useDispatch();
-  const userSignin = useSelector((state) => state.userSignin);
-  const { userInfo, loading, error } = userSignin;
 
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [isResetPassword, setIsResetPassword] = useState(false);
@@ -21,14 +16,8 @@ const AuthPage = () => {
   const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('administrator');
-
-  const redirect = location.search ? location.search.split('=')[1] : '/';
-
-  useEffect(() => {
-    if (userInfo) {
-      navigate(redirect);
-    }
-  }, [navigate, redirect, userInfo]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -47,14 +36,58 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSignUp) {
-      if (password !== confirmPassword) {
-        alert('Les mots de passe ne correspondent pas');
-        return;
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        if (password !== confirmPassword) {
+          setError('Les mots de passe ne correspondent pas');
+          return;
+        }
+
+        const response = await axios.post('http://localhost:5050/api/users/register', {
+          name,
+          email,
+          password,
+          role
+        });
+
+        if (response.data.token) {
+          localStorage.setItem('userInfo', JSON.stringify(response.data));
+          redirectBasedOnRole(response.data.role);
+        }
+      } else {
+        const response = await axios.post('http://localhost:5050/api/users/signin', {
+          email,
+          password
+        });
+
+        if (response.data.token) {
+          localStorage.setItem('userInfo', JSON.stringify(response.data));
+          redirectBasedOnRole(response.data.role);
+        }
       }
-      dispatch(register(name, email, password, role));
-    } else {
-      dispatch(signin(email, password));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Une erreur est survenue');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const redirectBasedOnRole = (role) => {
+    switch (role) {
+      case 'administrator':
+        navigate('/da');
+        break;
+      case 'analyst':
+        navigate('/dl');
+        break;
+      case 'technicien':
+        navigate('/technicien');
+        break;
+      default:
+        navigate('/');
     }
   };
 
@@ -82,7 +115,6 @@ const AuthPage = () => {
           </div>
 
           {error && <div className="error-message">{error}</div>}
-          {loading && <div className="loading-message">Chargement...</div>}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             {isResetPassword ? (
@@ -123,6 +155,7 @@ const AuthPage = () => {
                         onChange={handleInputChange}
                         required
                       >
+                        <option value="administrator">Administrateur</option>
                         <option value="analyst">Analyste</option>
                         <option value="technicien">Technicien</option>
                       </select>

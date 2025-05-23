@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../../components/components_dash_admin/Layout/Layout';
 import Header from '../../components/components_dash_admin/Header/Header';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,26 +9,67 @@ import {
   faTrash, 
   faTimes 
 } from '@fortawesome/free-solid-svg-icons';
-import { initialUsers } from '../../data/adminData'; // Correct import path
+import axios from 'axios';
 import '../../styles/User.css';
 
 const Users = () => {
-  const [users, setUsers] = useState(initialUsers);
-  const [formMode, setFormMode] = useState('add'); // 'add', 'edit'
+  const [users, setUsers] = useState([]);
+  const [formMode, setFormMode] = useState('add');
   const [formData, setFormData] = useState({
-    id: null,
-    username: '',
+    name: '',
     email: '',
     password: '',
-    role: 'Technicien',
-    status: 'Active'
+    role: 'technicien',
+    status: 'active'
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      if (!userInfo || !userInfo.token) {
+        setError('Vous devez être connecté pour accéder à cette page');
+        return;
+      }
+
+      const response = await axios.get('http://localhost:5050/api/users', {
+        headers: { 
+          'Authorization': `Bearer ${userInfo.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data) {
+        setUsers(response.data);
+      } else {
+        setError('Aucun utilisateur trouvé');
+      }
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      if (err.response) {
+        setError(err.response.data.message || 'Erreur lors du chargement des utilisateurs');
+      } else if (err.request) {
+        setError('Impossible de se connecter au serveur');
+      } else {
+        setError('Une erreur est survenue');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter users based on search term
   const filteredUsers = users.filter(user => 
-    (user.username?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.role?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
@@ -45,37 +86,55 @@ const Users = () => {
   // Reset form
   const resetForm = () => {
     setFormData({
-      id: null,
-      username: '',
+      name: '',
       email: '',
       password: '',
-      role: 'Technicien',
-      status: 'Active'
+      role: 'technicien',
+      status: 'active'
     });
     setFormMode('add');
+    setError(null);
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (formMode === 'add') {
-      // Add new user
-      const newUser = {
-        ...formData,
-        id: users.length > 0 ? Math.max(...users.map(user => user.id)) + 1 : 1
+    setError(null);
+    setLoading(true);
+
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      if (!userInfo || !userInfo.token) {
+        setError('Vous devez être connecté pour effectuer cette action');
+        return;
+      }
+
+      const headers = { 
+        'Authorization': `Bearer ${userInfo.token}`,
+        'Content-Type': 'application/json'
       };
-      setUsers([...users, newUser]);
-    } else {
-      // Update existing user
-      setUsers(users.map(user => 
-        user.id === formData.id ? {...formData} : user
-      ));
+
+      if (formMode === 'add') {
+        await axios.post('http://localhost:5050/api/users/add', formData, { headers });
+      } else {
+        await axios.put(`http://localhost:5050/api/users/${formData._id}`, formData, { headers });
+      }
+
+      await fetchUsers();
+      setShowForm(false);
+      resetForm();
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      if (err.response) {
+        setError(err.response.data.message || 'Une erreur est survenue');
+      } else if (err.request) {
+        setError('Impossible de se connecter au serveur');
+      } else {
+        setError('Une erreur est survenue');
+      }
+    } finally {
+      setLoading(false);
     }
-    
-    // Close form and reset
-    setShowForm(false);
-    resetForm();
   };
 
   // Edit user
@@ -89,9 +148,35 @@ const Users = () => {
   };
 
   // Delete user
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur?')) {
-      setUsers(users.filter(user => user.id !== id));
+      try {
+        setLoading(true);
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        if (!userInfo || !userInfo.token) {
+          setError('Vous devez être connecté pour effectuer cette action');
+          return;
+        }
+
+        await axios.delete(`http://localhost:5050/api/users/${id}`, {
+          headers: { 
+            'Authorization': `Bearer ${userInfo.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        await fetchUsers();
+      } catch (err) {
+        console.error('Error deleting user:', err);
+        if (err.response) {
+          setError(err.response.data.message || 'Erreur lors de la suppression');
+        } else if (err.request) {
+          setError('Impossible de se connecter au serveur');
+        } else {
+          setError('Une erreur est survenue');
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -133,14 +218,15 @@ const Users = () => {
             <FontAwesomeIcon icon={faPlus} /> Ajouter un utilisateur
           </button>
         </div>
+
+        {error && <div className="error-message">{error}</div>}
         
         {/* Users Table */}
         <div className="um-table-container">
           <table className="um-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Nom d'utilisateur</th>
+                <th>Nom</th>
                 <th>Email</th>
                 <th>Rôle</th>
                 <th>Statut</th>
@@ -148,11 +234,14 @@ const Users = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.length > 0 ? ( // Fixed typo: anatomie -> length
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="loading">Chargement...</td>
+                </tr>
+              ) : filteredUsers.length > 0 ? (
                 filteredUsers.map(user => (
-                  <tr key={user.id}>
-                    <td>{user.id}</td>
-                    <td>{user.username}</td>
+                  <tr key={user._id}>
+                    <td>{user.name}</td>
                     <td>{user.email}</td>
                     <td>{user.role}</td>
                     <td>
@@ -164,7 +253,7 @@ const Users = () => {
                       <button className="edit-btn" onClick={() => handleEdit(user)}>
                         <FontAwesomeIcon icon={faEdit} />
                       </button>
-                      <button className="delete-btn" onClick={() => handleDelete(user.id)}>
+                      <button className="delete-btn" onClick={() => handleDelete(user._id)}>
                         <FontAwesomeIcon icon={faTrash} />
                       </button>
                     </td>
@@ -172,7 +261,7 @@ const Users = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="no-results">Aucun utilisateur trouvé</td>
+                  <td colSpan="5" className="no-results">Aucun utilisateur trouvé</td>
                 </tr>
               )}
             </tbody>
@@ -191,12 +280,12 @@ const Users = () => {
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label htmlFor="username">Nom d'utilisateur</label>
+                  <label htmlFor="name">Nom d'utilisateur</label>
                   <input 
                     type="text" 
-                    id="username" 
-                    name="username" 
-                    value={formData.username} 
+                    id="name" 
+                    name="name" 
+                    value={formData.name} 
                     onChange={handleInputChange}
                     required
                   />
@@ -235,10 +324,11 @@ const Users = () => {
                     name="role" 
                     value={formData.role} 
                     onChange={handleInputChange}
+                    required
                   >
-                    <option value="Administrator">Administrator</option>
-                    <option value="Analyste des données">Analyste des données</option>
-                    <option value="Technicien">Technicien</option>
+                    <option value="administrator">Administrateur</option>
+                    <option value="analyst">Analyste des données</option>
+                    <option value="technicien">Technicien</option>
                   </select>
                 </div>
                 
@@ -249,10 +339,10 @@ const Users = () => {
                     name="status" 
                     value={formData.status} 
                     onChange={handleInputChange}
+                    required
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactif">Inactif</option>
-                    <option value="Suspendu">Suspendu</option>
+                    <option value="active">Actif</option>
+                    <option value="inactive">Inactif</option>
                   </select>
                 </div>
                 
@@ -260,8 +350,8 @@ const Users = () => {
                   <button type="button" className="cancel-btn" onClick={handleCloseForm}>
                     Annuler
                   </button>
-                  <button type="submit" className="submit-btn">
-                    {formMode === 'add' ? 'Ajouter' : 'Mettre à jour'}
+                  <button type="submit" className="submit-btn" disabled={loading}>
+                    {loading ? 'Chargement...' : (formMode === 'add' ? 'Ajouter' : 'Mettre à jour')}
                   </button>
                 </div>
               </form>

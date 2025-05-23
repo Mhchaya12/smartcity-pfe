@@ -5,52 +5,95 @@ import Charts from '../../components/components_dash_admin/Charts/Charts';
 import Alerts from '../../components/components_dash_admin/Alerts/Alertsad';
 import Metrics from '../../components/components_dash_admin/Metrics/Metrics';
 import WasteLevels from '../../components/components_dash_admin/WasteLevels/WasteLevels';
-import { initialSensorHistory, SensorStatus } from '../../data/adminData'; // Import from adminData.js
+import { SensorStatus } from '../../data/adminData';
 import '../../styles/Dashboard.css';
 
-const Dashboard = () => {
-  const [donneesCapteurs, setDonneesCapteurs] = useState(
-    initialSensorHistory.map(item => ({
-      ...item,
-      date: item.timestamp.toLocaleString('fr-FR'),
-      data: `${item.value || 'N/A'} ${item.unit || ''}`,
-      status: item.status
-    }))
-  );
-  const [historiquesActifs, setHistoriquesActifs] = useState(
-    initialSensorHistory.filter(item => item.status !== SensorStatus.OPERATIONAL).map(item => ({
-      id: item.id,
-      titre: `${item.type} - ${item.location}`,
-      ...item,
-    }))
-  );
+const Dashboard = ({energie, dechets, transport, securite}) => {
+  const [donneesCapteurs, setDonneesCapteurs] = useState([]);
+  const [historiquesActifs, setHistoriquesActifs] = useState([]);
   const [historiquesTraites, setHistoriquesTraites] = useState([]);
   const [ongletActif, setOngletActif] = useState('Actifs');
   const [termeRecherche, setTermeRecherche] = useState('');
-  const [vueActive, setVueActive] = useState('dashboard'); // 'dashboard' ou 'historique'
+  const [vueActive, setVueActive] = useState('dashboard');
   const wasteLevelsRef = useRef(null);
 
-  const gererResolutionHistorique = (id) => {
-    const historiqueATraiter = historiquesActifs.find((historique) => historique.id === id);
-    if (historiqueATraiter) {
-      setHistoriquesActifs(historiquesActifs.filter((historique) => historique.id !== id));
-      setHistoriquesTraites([...historiquesTraites, { ...historiqueATraiter, traitee: true }]);
-      setOngletActif('Traitées');
+  useEffect(() => {
+    // Mettre à jour les données des capteurs lorsque de nouvelles données sont reçues
+    const newData = [];
+    
+    if (energie) {
+      newData.push({
+        id: energie._id,
+        type: 'Énergie',
+        location: energie.localisation,
+        data: `${energie.seuilConsomation} kWh`,
+        status: energie.status,
+        date: new Date(energie.dernier_mise_a_jour).toLocaleString('fr-FR'),
+        pourcentage: energie.pourcentage
+      });
     }
-  };
+    
+    if (dechets) {
+      newData.push({
+        id: dechets._id,
+        type: 'Déchets',
+        location: dechets.localisation,
+        data: `${dechets.niveaux_remplissage}%`,
+        status: dechets.status,
+        date: new Date(dechets.dernier_mise_a_jour).toLocaleString('fr-FR'),
+        pourcentage: dechets.pourcentage
+      });
+    }
+    
+    if (transport) {
+      newData.push({
+        id: transport._id,
+        type: 'Transport',
+        location: transport.localisation,
+        data: `${transport.fluxActuelle} véhicules`,
+        status: transport.status,
+        date: new Date(transport.dernier_mise_a_jour).toLocaleString('fr-FR'),
+        pourcentage: transport.pourcentage
+      });
+    }
+    
+    if (securite) {
+      newData.push({
+        id: securite._id,
+        type: 'Sécurité',
+        location: securite.localisation,
+        data: `${securite.anomalieDetection} anomalies`,
+        status: securite.status,
+        date: new Date(securite.dernier_mise_a_jour).toLocaleString('fr-FR'),
+        pourcentage: securite.pourcentage
+      });
+    }
 
-  const donneesFiltrees = donneesCapteurs.filter(item =>
-    (item.type && item.type.toLowerCase().includes(termeRecherche.toLowerCase())) ||
-    (item.location && item.location.toLowerCase().includes(termeRecherche.toLowerCase())) ||
-    (item.data && item.data.toLowerCase().includes(termeRecherche.toLowerCase()))
-  );
+    console.log('New data being added:', newData);
+    setDonneesCapteurs(prevData => {
+      const updatedData = [...prevData, ...newData];
+      console.log('Updated donneesCapteurs:', updatedData);
+      return updatedData;
+    });
+    
+    // Mettre à jour les historiques actifs
+    const newActifs = newData.filter(item => item.status !== SensorStatus.OPERATIONAL);
+    setHistoriquesActifs(prevActifs => [...prevActifs, ...newActifs]);
+  }, [energie, dechets, transport, securite]);
+
+  const donneesFiltrees = donneesCapteurs.filter(item => {
+    console.log('Search term:', termeRecherche);
+    console.log('Item type:', item.type);
+    return item.type && item.type.toLowerCase().includes(termeRecherche.toLowerCase());
+  });
 
   const gererChangementVue = () => {
     setVueActive(vueActive === 'dashboard' ? 'historique' : 'dashboard');
-    setTermeRecherche(''); // Reset search term when switching views
+    setTermeRecherche('');
   };
 
   const gererRecherche = (e) => {
+    console.log('Search input:', e.target.value);
     setTermeRecherche(e.target.value);
   };
 
@@ -98,12 +141,17 @@ const Dashboard = () => {
 
         {vueActive === 'dashboard' ? (
           <>
-            <Metrics />
-            <Charts />
+            <Metrics 
+              energie={energie} 
+              dechets={dechets} 
+              transport={transport} 
+              securite={securite} 
+            />
+            <Charts energie={energie} transport={transport} />
             <div className="bottom-section">
               <Alerts />
               <div ref={wasteLevelsRef}>
-                <WasteLevels />
+                <WasteLevels dechets={dechets} />
               </div>
             </div>
           </>
@@ -119,6 +167,7 @@ const Dashboard = () => {
                   <th style={{ border: '1px solid #ddd', padding: '8px' }}>Lieu</th>
                   <th style={{ border: '1px solid #ddd', padding: '8px' }}>Données</th>
                   <th style={{ border: '1px solid #ddd', padding: '8px' }}>Statut</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -132,6 +181,7 @@ const Dashboard = () => {
                     <td style={{ border: '1px solid #ddd', padding: '8px' }}>
                       <span className={getStatusClass(item.status)}>{item.status}</span>
                     </td>
+                    
                   </tr>
                 ))}
               </tbody>

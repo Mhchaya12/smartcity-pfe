@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faSignOutAlt, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faSignOutAlt, faBars, faUser } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 const Header = ({ title, subtitle, toggleSidebar, isSidebarOpen }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
   const unreadAlerts = 3; // exemple statique
 
   useEffect(() => {
@@ -21,6 +24,33 @@ const Header = ({ title, subtitle, toggleSidebar, isSidebarOpen }) => {
     setIsDropdownOpen((prev) => !prev);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('userInfo');
+    navigate('/auth');
+  };
+
+  const getInitials = (name) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case 'administrator':
+        return 'Administrateur';
+      case 'analyst':
+        return 'Analyste';
+      case 'technicien':
+        return 'Technicien';
+      default:
+        return role;
+    }
+  };
+
   return (
     <header className="bg-white h-16 border-b flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm">
       <div className="flex items-center space-x-4">
@@ -34,7 +64,9 @@ const Header = ({ title, subtitle, toggleSidebar, isSidebarOpen }) => {
 
         <div>
           <h1 className="text-lg font-semibold">{title}</h1>
-          <p className="text-sm text-gray-500">{subtitle || 'Bienvenue, Technicien ! Voici les informations.'}</p>
+          <p className="text-sm text-gray-500">
+            {subtitle || `Bienvenue, ${userInfo.name || 'Utilisateur'} !`}
+          </p>
         </div>
       </div>
 
@@ -54,24 +86,24 @@ const Header = ({ title, subtitle, toggleSidebar, isSidebarOpen }) => {
             onClick={toggleDropdown}
           >
             <div className="h-8 w-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-              TT
+              {userInfo.name ? getInitials(userInfo.name) : <FontAwesomeIcon icon={faUser} />}
             </div>
             <div className="hidden md:block text-left">
-              <div className="text-sm font-medium">Alie</div>
-              <div className="text-xs text-gray-500">Technicien</div>
+              <div className="text-sm font-medium">{userInfo.name || 'Utilisateur'}</div>
+              <div className="text-xs text-gray-500">{getRoleLabel(userInfo.role)}</div>
             </div>
           </div>
 
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 shadow-md rounded-md z-50">
               <div className="p-4 border-b">
-                <h3 className="text-sm font-semibold">Alie</h3>
-                <p className="text-xs text-gray-500">alie@smartcity.com</p>
+                <h3 className="text-sm font-semibold">{userInfo.name}</h3>
+                <p className="text-xs text-gray-500">{userInfo.email}</p>
                 <span className="mt-1 inline-block text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
-                  Analyste
+                  {getRoleLabel(userInfo.role)}
                 </span>
               </div>
-              <div className="p-3 hover:bg-gray-50 flex items-center cursor-pointer">
+              <div className="p-3 hover:bg-gray-50 flex items-center cursor-pointer" onClick={handleLogout}>
                 <FontAwesomeIcon icon={faSignOutAlt} className="mr-2 text-gray-500" />
                 <span className="text-sm text-gray-700">Se déconnecter</span>
               </div>

@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon --watch backend --exec node --experimental-modules backend/server.js",
-    "start-backend": "cd backend && npm start",
-    "seedsensorenergie": "node backend/seeds/sensorenergie.js"
+    "start-backend": "cd backend && npm start"
   },
   "repository": {
     "type": "git",
