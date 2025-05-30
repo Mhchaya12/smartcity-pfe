@@ -138,7 +138,7 @@ const Dashboard = ({energie, dechets, transport, securite}) => {
     <Layout>
       <Header
         title="Tableau de bord"
-        subtitle="Bienvenue, Chayma ! Voici ce qui se passe aujourd'hui."
+        subtitle="Bienvenue ! Voici ce qui se passe aujourd'hui."
       />
       <div className="dashboard">
         <div className="controls">

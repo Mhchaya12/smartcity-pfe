@@ -5,7 +5,7 @@ import { MaintenancePlanner } from '../../components/components_dash_technicien/
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/components_dash_technicien/ui/card';
 import { Button } from '../../components/components_dash_technicien/ui/button';
 import { useToast } from '../../components/components_dash_technicien/ui/use-toast';
-import { alerts as mockAlerts, sensors as mockSensors } from '../../data/mockData';
+import { sensors as mockSensors } from '../../data/mockData';
 import { SensorStatus } from '../../data/sharedData';
 import { 
   ArrowRight, 
@@ -22,23 +22,30 @@ import {
   Battery,
   Trash2,
   Car,
-  Shield
+  Shield,
+  Bell,
+  Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { maintenanceService } from '../../services/maintenanceService';
 import { sensorService } from '../../services/sensorService';
 import { socketService } from '../../services/socketService';
+import axios from 'axios';
 
 const Index = () => {
-  const [alerts, setAlerts] = useState(mockAlerts);
+  const [alerts, setAlerts] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [sensors, setSensors] = useState({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
+    fetchAlerts();
     fetchMaintenanceTasks();
     fetchSensors();
+    
+    // Set up polling for real-time updates
+    const alertInterval = setInterval(fetchAlerts, 5000);
     
     // S'abonner aux mises à jour des capteurs
     const handleSensorUpdate = (data) => {
@@ -63,6 +70,7 @@ const Index = () => {
     socketService.subscribeToSensorUpdates('transport', handleSensorUpdate);
 
     return () => {
+      clearInterval(alertInterval);
       // Nettoyer les abonnements
       socketService.unsubscribeFromSensorUpdates('dechet', handleSensorUpdate);
       socketService.unsubscribeFromSensorUpdates('energie', handleSensorUpdate);
@@ -70,6 +78,20 @@ const Index = () => {
       socketService.unsubscribeFromSensorUpdates('transport', handleSensorUpdate);
     };
   }, []);
+
+  const fetchAlerts = async () => {
+    try {
+      const response = await axios.get('http://localhost:5050/api/alerts');
+      setAlerts(response.data);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de récupérer les alertes",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchSensors = async () => {
     try {
@@ -132,15 +154,22 @@ const Index = () => {
     }
   };
 
-  const handleResolveAlert = (id) => {
-    setAlerts(alerts.map(alert =>
-      alert.id === id ? { ...alert, resolved: true } : alert
-    ));
-
-    toast({
-      title: "Alerte résolue",
-      description: "L'alerte a été marquée comme résolue.",
-    });
+  const handleResolveAlert = async (id) => {
+    try {
+      await axios.put(`http://localhost:5050/api/alerts/${id}/resolve`);
+      fetchAlerts(); // Refresh alerts after resolution
+      toast({
+        title: "Alerte résolue",
+        description: "L'alerte a été marquée comme résolue.",
+      });
+    } catch (error) {
+      console.error('Error resolving alert:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de résoudre l'alerte",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleStatusChange = async (taskId, newStatus) => {
@@ -192,9 +221,10 @@ const Index = () => {
   const highPriorityTasks = tasks.filter(t => t.priority === 'high' && t.status !== 'completed').length;
 
   // Statistiques des alertes
-  const activeAlerts = alerts.filter(a => !a.resolved).length;
-  const criticalAlerts = alerts.filter(a => !a.resolved && a.severity === 'critical').length;
-  const warningAlerts = alerts.filter(a => !a.resolved && a.severity === 'warning').length;
+  const activeAlerts = alerts.filter(a => !a.resolu);
+  const criticalActiveAlerts = activeAlerts.filter(a => a.etat === 'critical').length;
+  const warningActiveAlerts = activeAlerts.filter(a => a.etat === 'warning').length;
+  const infoActiveAlerts = activeAlerts.filter(a => a.etat === 'info').length;
 
   // Statistiques des états des capteurs
   const sensorStatusCounts = {
@@ -220,9 +250,9 @@ const Index = () => {
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Alertes Actives</p>
                 <div className="flex items-baseline space-x-2">
-                  <h2 className="text-3xl font-bold">{activeAlerts}</h2>
+                  <h2 className="text-3xl font-bold">{activeAlerts.length}</h2>
                   <p className="text-sm text-muted-foreground">
-                    <span className="text-tech-red font-medium">{criticalAlerts} critiques</span>
+                    <span className="text-tech-red font-medium">{criticalActiveAlerts} critiques</span>
                   </p>
                 </div>
               </div>
@@ -288,31 +318,6 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
-
-        <Card className="card-hover">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Capteurs Opérationnels</p>
-                <div className="flex items-baseline space-x-2">
-                  <h2 className="text-3xl font-bold">{sensorsByStatus.operational}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="text-tech-green font-medium">{operationalPercentage}%</span>
-                  </p>
-                </div>
-              </div>
-              <div className="h-10 w-10 rounded-md bg-tech-green/20 flex items-center justify-center">
-                <CheckCircle2 className="h-5 w-5 text-tech-green" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center">
-              <Link to="/technicien/sensors" className="text-sm text-tech-blue hover:underline flex items-center">
-                Voir les capteurs
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Alertes et Maintenance */}
@@ -327,7 +332,7 @@ const Index = () => {
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 text-sm text-tech-red">
                   <AlertTriangle className="h-4 w-4" />
-                  <span>{criticalAlerts} critiques</span>
+                  <span>{criticalActiveAlerts} critiques</span>
                 </div>
                 <Link to="/technicien/alerts">
                   <Button variant="ghost" size="sm" className="text-tech-blue hover:text-tech-blue">
@@ -340,7 +345,7 @@ const Index = () => {
           </CardHeader>
           <CardContent>
             <AlertList
-              alerts={alerts.filter(a => !a.resolved).slice(0, 3)}
+              alerts={activeAlerts.slice(0, 3)}
               onResolve={handleResolveAlert}
             />
           </CardContent>

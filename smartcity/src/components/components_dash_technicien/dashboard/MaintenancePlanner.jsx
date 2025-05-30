@@ -40,8 +40,7 @@ export const MaintenancePlanner = ({
     replacement: { label: 'Remplacement', icon: <Wrench className="h-4 w-4" /> },
     calibration: { label: 'Calibration', icon: <RotateCw className="h-4 w-4" /> },
     inspection: { label: 'Inspection', icon: <Search className="h-4 w-4" /> },
-    repair: { label: 'Réparation', icon: <Settings className="h-4 w-4" /> },
-    default: { label: 'Inconnu', icon: <Settings className="h-4 w-4" /> }
+    repair: { label: 'Réparation', icon: <Settings className="h-4 w-4" /> }
   };
 
   const STATUS_CONFIG = {
@@ -59,11 +58,6 @@ export const MaintenancePlanner = ({
       label: 'Terminé',
       icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
       badgeClass: 'bg-green-100 text-green-800 border-green-200'
-    },
-    default: { 
-      label: 'Inconnu',
-      icon: <Clock className="h-4 w-4" />,
-      badgeClass: 'bg-gray-100 text-gray-800'
     }
   };
 
@@ -71,8 +65,7 @@ export const MaintenancePlanner = ({
     transport: <Car className="h-4 w-4" />,
     energie: <Battery className="h-4 w-4" />,
     dechet: <Trash2 className="h-4 w-4" />,
-    securite: <Shield className="h-4 w-4" />,
-    default: <Settings className="h-4 w-4" />
+    securite: <Shield className="h-4 w-4" />
   };
 
   const SENSOR_STATUS_CONFIG = {
@@ -100,11 +93,6 @@ export const MaintenancePlanner = ({
       label: 'Hors ligne',
       icon: <Activity className="h-4 w-4 text-gray-500" />,
       badgeClass: 'bg-gray-100 text-gray-800 border-gray-200'
-    },
-    default: {
-      label: 'Inconnu',
-      icon: <Activity className="h-4 w-4" />,
-      badgeClass: 'bg-gray-100 text-gray-800'
     }
   };
 
@@ -183,11 +171,11 @@ export const MaintenancePlanner = ({
                       task.sensorStatus === 'maintenance' ? 'bg-blue-100' :
                       'bg-gray-100'
                     }`}>
-                      {task.sensorType ? SENSOR_TYPE_ICONS[task.sensorType] : SENSOR_TYPE_ICONS.default}
+                      {SENSOR_TYPE_ICONS[task.sensorType] || <Settings className="h-4 w-4" />}
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">
-                        {taskConfig.label} - {SENSOR_TYPE_LABELS[task.sensorType] || task.sensorType}
+                        {task.sensorType}
                       </h3>
                       <p className="text-sm text-gray-500">
                         {task.sensorName ? `ID: ${task.sensorId} • ${task.sensorName}` : `ID: ${task.sensorId}`}
@@ -199,13 +187,13 @@ export const MaintenancePlanner = ({
                     <Badge className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${getPriorityBadgeClass(task.priority)}`}>
                       {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                     </Badge>
-                    <Badge className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${statusConfig.badgeClass}`}>
-                      {statusConfig.icon}
-                      <span>{statusConfig.label}</span>
+                    <Badge className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${statusConfig?.badgeClass || 'bg-gray-100 text-gray-800'}`}>
+                      {statusConfig?.icon || <Clock className="h-4 w-4" />}
+                      <span>{statusConfig?.label || task.status}</span>
                     </Badge>
-                    <Badge className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${sensorStatusConfig.badgeClass}`}>
-                      {sensorStatusConfig.icon}
-                      <span>{sensorStatusConfig.label}</span>
+                    <Badge className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${sensorStatusConfig?.badgeClass || 'bg-gray-100 text-gray-800'}`}>
+                      {sensorStatusConfig?.icon || <Activity className="h-4 w-4" />}
+                      <span>{sensorStatusConfig?.label || task.sensorStatus}</span>
                     </Badge>
                   </div>
                 </div>

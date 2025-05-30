@@ -127,7 +127,7 @@ const Maintenance = () => {
           assignedTo: task.assignedTo || 'Technicien',
           sensorStatus: task.sensorStatus || 'operational',
           location: task.location || sensorName,
-          sensorType: task.sensorType || 'default'
+          sensorType: task.sensorType
         };
       });
       setTasks(transformedTasks);
