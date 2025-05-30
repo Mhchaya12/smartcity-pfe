@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/components_dash_technicien/layout/DashboardLayout';
 import { AlertList } from '../../components/components_dash_technicien/dashboard/AlertList';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/components_dash_technicien/ui/card';
@@ -6,42 +6,70 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/compo
 import { Input } from '../../components/components_dash_technicien/ui/input';
 import { Button } from '../../components/components_dash_technicien/ui/button';
 import { useToast } from '../../components/components_dash_technicien/ui/use-toast';
-import { alerts as mockAlerts } from '../../data/mockData';
 import { Bell, Search, Filter, AlertTriangle, Check } from 'lucide-react';
+import axios from 'axios';
 
 const Alerts = () => {
-  const [alerts, setAlerts] = useState(mockAlerts);
+  const [alerts, setAlerts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   
-  const activeAlerts = alerts.filter(a => !a.resolved);
-  const resolvedAlerts = alerts.filter(a => a.resolved);
+  // Fetch alerts on component mount
+  useEffect(() => {
+    fetchAlerts();
+    // Set up polling for real-time updates
+    const interval = setInterval(fetchAlerts, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchAlerts = async () => {
+    try {
+      const response = await axios.get('http://localhost:5050/api/alerts');
+      setAlerts(response.data);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de récupérer les alertes",
+        variant: "destructive",
+      });
+    }
+  };
   
-  const criticalActiveAlerts = activeAlerts.filter(a => a.type === 'critical').length;
-  const warningActiveAlerts = activeAlerts.filter(a => a.type === 'warning').length;
-  const infoActiveAlerts = activeAlerts.filter(a => a.type === 'info').length;
+  const activeAlerts = alerts.filter(a => !a.resolu);
+  const resolvedAlerts = alerts.filter(a => a.resolu);
   
-  const handleResolveAlert = (id) => {
-    setAlerts(alerts.map(alert => 
-      alert.id === id ? { ...alert, resolved: true } : alert
-    ));
-    
-    toast({
-      title: "Alerte résolue",
-      description: "L'alerte a été marquée comme résolue.",
-    });
+  // Count alerts by type
+  const criticalActiveAlerts = activeAlerts.filter(a => a.etat === 'critical').length;
+  const warningActiveAlerts = activeAlerts.filter(a => a.etat === 'warning').length;
+  const infoActiveAlerts = activeAlerts.filter(a => a.etat === 'info').length;
+  
+  const handleResolveAlert = async (id) => {
+    try {
+      await axios.put(`http://localhost:5050/api/alerts/${id}/resolve`);
+      fetchAlerts(); // Refresh alerts after resolution
+      toast({
+        title: "Alerte résolue",
+        description: "L'alerte a été marquée comme résolue.",
+      });
+    } catch (error) {
+      console.error('Error resolving alert:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de résoudre l'alerte",
+        variant: "destructive",
+      });
+    }
   };
   
   const filteredActiveAlerts = activeAlerts.filter(alert => 
-    alert.message.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    alert.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    alert.sensorId.toLowerCase().includes(searchQuery.toLowerCase())
+    alert.description.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    alert.local.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   const filteredResolvedAlerts = resolvedAlerts.filter(alert => 
-    alert.message.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    alert.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    alert.sensorId.toLowerCase().includes(searchQuery.toLowerCase())
+    alert.description.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    alert.local.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -80,19 +108,7 @@ const Alerts = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-blue-50 border-tech-blue/20">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Alertes d'Information</p>
-                <h2 className="text-2xl font-bold text-tech-blue">{infoActiveAlerts}</h2>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-tech-blue/20 flex items-center justify-center">
-                <Bell className="h-5 w-5 text-tech-blue" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        
       </div>
       
       <Card className="mb-8">

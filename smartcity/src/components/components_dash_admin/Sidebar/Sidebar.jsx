@@ -83,15 +83,7 @@ const Sidebar = () => {
           </ul>
         </div> 
 
-        <div className="sidebar-footer">
-          <div className="user-info">
-            <div className="user-avatar">AD</div>
-            <div className="user-details">
-              <div className="user-name">Admin</div>
-              <div className="user-email">admin@smartcity.fr</div>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </>
   );

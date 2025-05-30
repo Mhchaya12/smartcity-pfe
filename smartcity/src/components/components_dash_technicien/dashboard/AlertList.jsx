@@ -44,6 +44,17 @@ export const AlertList = ({ alerts, onResolve, limit }) => {
     }
   };
 
+  const generateUniqueKey = (alert, index) => {
+    // Try to use the alert ID first
+    if (alert._id) return `alert-${alert._id}`;
+    
+    // If no ID is available, create a unique key using other properties
+    const timestamp = alert.date_creation || new Date().toISOString();
+    const location = alert.local || '';
+    const description = alert.description || '';
+    return `alert-${timestamp}-${location}-${description}-${index}`;
+  };
+
   return (
     <div className="space-y-4">
       {DISPLAY_ALERTS.length === 0 ? (
@@ -53,16 +64,26 @@ export const AlertList = ({ alerts, onResolve, limit }) => {
           </CardContent>
         </Card>
       ) : (
-        DISPLAY_ALERTS.map((alert) => {
-          const alertConfig = ALERT_CONFIG[alert.type] || ALERT_CONFIG.default;
-          const alertStyle = ALERT_STYLES[alert.type] || ALERT_STYLES.default;
+        DISPLAY_ALERTS.map((alert, index) => {
+          // Map API properties to component properties
+          const type = alert.etat || 'default';
+          const resolved = alert.resolu || false;
+          const message = alert.description || '';
+          const location = alert.local || '';
+          const sensorId = alert.id_capteur || '';
+          const timestamp = alert.date_creation ? new Date(alert.date_creation) : new Date();
+          const alertId = alert._id || '';
+          const uniqueKey = generateUniqueKey(alert, index);
+
+          const alertConfig = ALERT_CONFIG[type] || ALERT_CONFIG.default;
+          const alertStyle = ALERT_STYLES[type] || ALERT_STYLES.default;
 
           return (
             <Card
-              key={alert.id}
+              key={uniqueKey}
               className={`overflow-hidden transition-all duration-200 ${alertStyle.borderClass} 
-                ${alert.resolved ? 'opacity-75 bg-gray-50' : `${alertStyle.bgClass}`}`}
-              onMouseEnter={() => setHoveredAlert(alert.id)}
+                ${resolved ? 'opacity-75 bg-gray-50' : `${alertStyle.bgClass}`}`}
+              onMouseEnter={() => setHoveredAlert(uniqueKey)}
               onMouseLeave={() => setHoveredAlert(null)}
             >
               <CardContent className="p-4">
@@ -76,40 +97,40 @@ export const AlertList = ({ alerts, onResolve, limit }) => {
                         {alertConfig.label}
                       </h3>
                       <span className="ml-auto text-xs text-gray-500">
-                        {getTimeAgo(alert.timestamp)}
+                        {getTimeAgo(timestamp)}
                       </span>
                     </div>
                     
-                    <p className="text-sm text-gray-700 mb-3 line-clamp-2">{alert.message}</p>
+                    <p className="text-sm text-gray-700 mb-3 line-clamp-2">{message}</p>
                     
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="outline" className="text-xs px-2 py-1 rounded-full text-gray-700 border-gray-200">
-                        {alert.location}
+                        {location}
                       </Badge>
                       <Badge variant="outline" className="text-xs px-2 py-1 rounded-full text-gray-700 border-gray-200">
-                        ID: {alert.sensorId}
+                        ID: {sensorId}
                       </Badge>
                       <Badge
-                        variant={alert.resolved ? "outline" : "secondary"}
+                        variant={resolved ? "outline" : "secondary"}
                         className={`text-xs px-2 py-1 rounded-full ${
-                          alert.resolved 
+                          resolved 
                             ? "text-green-700 bg-green-100 border-green-200" 
                             : "text-gray-800 bg-gray-200"
                         }`}
                       >
-                        {alert.resolved ? 'Résolu' : 'Non résolu'}
+                        {resolved ? 'Résolu' : 'Non résolu'}
                       </Badge>
                     </div>
                   </div>
 
-                  {!alert.resolved && onResolve && (
+                  {!resolved && onResolve && alertId && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className={`ml-2 flex-shrink-0 text-green-600 hover:text-green-700 hover:bg-green-50 transition-opacity duration-200 ${
-                        hoveredAlert === alert.id ? 'opacity-100' : 'opacity-0'
+                        hoveredAlert === uniqueKey ? 'opacity-100' : 'opacity-0'
                       }`}
-                      onClick={() => onResolve(alert.id)}
+                      onClick={() => onResolve(alertId)}
                     >
                       <Check className="h-4 w-4 mr-1" />
                       Résoudre

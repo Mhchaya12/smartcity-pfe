@@ -60,14 +60,19 @@ export const generateReport = async (req, res) => {
   }
 };
 
-export const getReports = async (req, res) => {
+export const getAllReports = async (req, res) => {
   try {
     const reports = await Report.find()
       .sort({ createdAt: -1 })
       .populate('generatedBy', 'name email');
-    res.status(200).json(reports);
+    
+    // Ensure we always return an array
+    const reportsArray = Array.isArray(reports) ? reports : [];
+    
+    res.status(200).json(reportsArray);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error in getAllReports:', error);
+    res.status(500).json({ message: error.message, reports: [] });
   }
 };
 
@@ -82,6 +87,75 @@ export const getReportById = async (req, res) => {
 
     res.status(200).json(report);
   } catch (error) {
+    console.error('Error in getReportById:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const createReport = async (req, res) => {
+  try {
+    const reportData = {
+      type: req.body.type,
+      dateGeneration: new Date(),
+      type_rapport: req.body.type_rapport,
+      titre_rapport: req.body.titre_rapport,
+      description: req.body.description,
+      data: req.body.data || [],
+      generatedBy: req.user?._id || '000000000000000000000000' // Default ObjectId if no user
+    };
+
+    const report = new Report(reportData);
+    const savedReport = await report.save();
+    
+    res.status(201).json(savedReport);
+  } catch (error) {
+    console.error('Error in createReport:', error);
+    res.status(400).json({ 
+      message: error.message,
+      details: error.errors // Include validation errors if any
+    });
+  }
+};
+
+export const updateReport = async (req, res) => {
+  try {
+    const updateData = {
+      type: req.body.type,
+      dateGeneration: new Date(),
+      type_rapport: req.body.type_rapport,
+      titre_rapport: req.body.titre_rapport,
+      description: req.body.description,
+      data: req.body.data || []
+    };
+
+    const report = await Report.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    res.status(200).json(report);
+  } catch (error) {
+    console.error('Error in updateReport:', error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const deleteReport = async (req, res) => {
+  try {
+    const report = await Report.findByIdAndDelete(req.params.id);
+    
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    res.status(200).json({ message: 'Report deleted successfully' });
+  } catch (error) {
+    console.error('Error in deleteReport:', error);
     res.status(500).json({ message: error.message });
   }
 }; 

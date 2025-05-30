@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faSignOutAlt, faBars, faUser } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Header = ({ title, subtitle, toggleSidebar, isSidebarOpen }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -72,12 +72,8 @@ const Header = ({ title, subtitle, toggleSidebar, isSidebarOpen }) => {
 
       <div className="flex items-center space-x-6">
         <div className="relative">
-          <FontAwesomeIcon icon={faBell} className="text-gray-600 h-5 w-5 cursor-pointer" />
-          {unreadAlerts > 0 && (
-            <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-medium rounded-full h-4 w-4 flex items-center justify-center">
-              {unreadAlerts}
-            </span>
-          )}
+         <Link to="/technicien/alerts"><FontAwesomeIcon icon={faBell} className="text-gray-600 h-5 w-5 cursor-pointer" /></Link> 
+
         </div>
 
         <div className="relative" ref={dropdownRef}>

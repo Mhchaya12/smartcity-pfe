@@ -30,7 +30,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/smartcity', {
+mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/pfe', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
@@ -45,7 +45,7 @@ const io = initializeSocketIO(httpServer);
 // Update data every 10 seconds
 setInterval(() => {
   insertData(io);
-}, 10000);
+}, 50000);
 
 // Routes
 app.use('/api/users', userRouter);

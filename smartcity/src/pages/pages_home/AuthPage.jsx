@@ -212,7 +212,7 @@ const AuthPage = () => {
             </button>
           </form>
 
-          {!isSignUp && !isResetPassword && (
+          {/* {!isSignUp && !isResetPassword && (
             <div className="auth-footer">
               <button
                 className="text-button"
@@ -224,7 +224,7 @@ const AuthPage = () => {
                 Mot de passe oublié ?
               </button>
             </div>
-          )}
+          )} */}
 
           {isResetPassword && (
             <div className="auth-footer">

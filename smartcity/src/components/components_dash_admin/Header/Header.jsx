@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './Header.css';
 
 const Header = ({ title, subtitle }) => {
@@ -52,7 +52,7 @@ const Header = ({ title, subtitle }) => {
 
       <div className="header-actions">
         <div className="notification-bell">
-          <FontAwesomeIcon icon={faBell} className="bell-icon" />
+          <Link to="/alertsad"><FontAwesomeIcon icon={faBell} className="bell-icon" /></Link>
           <span className="notification-dot"></span>
         </div>
 

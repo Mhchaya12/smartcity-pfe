@@ -82,10 +82,12 @@
 .search-container {
   position: relative;
   margin-bottom: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .search-input {
-  width: 100%;
+  flex: 1;
   padding: 0.75rem 1rem;
   padding-left: 2.5rem;
   border: 1px solid #e2e8f0;
@@ -95,6 +97,23 @@
   background-repeat: no-repeat;
   background-position: 0.75rem center;
   background-size: 1rem;
+}
+
+.type-filter {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  background-color: white;
+  color: #4a5568;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.type-filter:focus {
+  outline: none;
+  border-color: #00b4d8;
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.1);
 }
 
 .search-input:focus {
@@ -700,4 +719,215 @@
   .modal {
     width: 95%;
   }
+}
+
+/* Styles pour la liste des données des capteurs */
+.data-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  padding: 0.5rem;
+  background-color: #f8fafc;
+}
+
+.data-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.data-item:last-child {
+  margin-bottom: 0;
+}
+
+.data-type {
+  font-weight: 600;
+  color: #1a2a44;
+  min-width: 100px;
+}
+
+.data-value {
+  font-weight: 700;
+  color: #00b4d8;
+  min-width: 60px;
+  text-align: center;
+}
+
+.data-location {
+  color: #4a5568;
+  flex: 1;
+  margin: 0 1rem;
+  text-align: left;
+}
+
+.data-time {
+  color: #718096;
+  font-size: 0.9rem;
+  min-width: 80px;
+  text-align: right;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 1rem;
+  color: #718096;
+  font-style: italic;
+}
+
+/* Animation pour les nouvelles données */
+@keyframes highlight {
+  0% {
+    background-color: #e0f7fa;
+  }
+  100% {
+    background-color: white;
+  }
+}
+
+.data-item.new {
+  animation: highlight 2s ease-out;
+}
+
+/* Styles pour l'affichage détaillé des données */
+.data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.data-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #f8fafc;
+  border-radius: 4px;
+}
+
+.metric-name {
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.metric-value {
+  font-weight: 600;
+  color: #00b4d8;
+}
+
+.data-item {
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.data-item:last-child {
+  margin-bottom: 0;
+}
+
+.data-type {
+  font-weight: 600;
+  color: #1a2a44;
+  font-size: 1.1rem;
+}
+
+.data-location {
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.data-time {
+  color: #718096;
+  font-size: 0.85rem;
+}
+
+/* Styles pour le modal de modification */
+.edit-report-modal {
+  max-width: 800px;
+}
+
+.metric-value-input {
+  width: 80px;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 600;
+  color: #00b4d8;
+}
+
+.metric-value-input:focus {
+  outline: none;
+  border-color: #00b4d8;
+  box-shadow: 0 0 0 2px rgba(0, 180, 216, 0.1);
+}
+
+.edit-button {
+  padding: 0.75rem 1.25rem;
+  background-color: #1a2a44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.edit-button:hover {
+  background-color: #0f172a;
+}
+
+.edit-button:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.data-item {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.data-metrics {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-name {
+  font-weight: 500;
+  color: #4a5568;
 }

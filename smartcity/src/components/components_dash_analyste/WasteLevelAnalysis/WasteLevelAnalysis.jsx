@@ -1,109 +1,145 @@
-import React, { forwardRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
-  wasteLevelData,
-  getWasteLevelColors,
-  getWasteLevelChartOptions,
-  COLLECTION_DATA,
-  wasteLevelDatasetConfig,
-} from '../../../data/analysteData';
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 import './WasteLevelAnalysis.css';
 
-const WasteLevelAnalysis = forwardRef((props, ref) => {
-  const [selectedZone, setSelectedZone] = useState('all');
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-  const { zones, wasteLevels, thresholds } = wasteLevelData;
+const WasteLevelAnalysis = React.forwardRef(({ wasteLevels }, ref) => {
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Niveau de remplissage',
+      data: [],
+      backgroundColor: 'rgba(75, 192, 192, 0.6)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 1
+    }]
+  });
 
-  // Filter data based on selected zone
-  const zonesData = selectedZone === 'all' ? zones : [selectedZone];
-  const levelsData = zonesData.map((zone) => wasteLevels[zone] || 0);
+  const [stats, setStats] = useState({
+    total: 0,
+    critical: 0,
+    warning: 0,
+    normal: 0
+  });
 
-  // Chart data
-  const chartData = {
-    labels: zonesData,
-    datasets: [
-      {
-        ...wasteLevelDatasetConfig,
-        data: levelsData,
-        backgroundColor: levelsData.map((level) => getWasteLevelColors(level, thresholds).backgroundColor),
-        borderColor: levelsData.map((level) => getWasteLevelColors(level, thresholds).borderColor),
+  useEffect(() => {
+    if (!wasteLevels || wasteLevels.length === 0) return;
+
+    // Group data by location
+    const groupedData = wasteLevels.reduce((acc, sensor) => {
+      if (!acc[sensor.location]) {
+        acc[sensor.location] = [];
+      }
+      acc[sensor.location].push(sensor.data);
+      return acc;
+    }, {});
+
+    // Calculate average level for each location
+    const averages = Object.entries(groupedData).map(([location, levels]) => ({
+      location,
+      average: levels.reduce((sum, level) => sum + level, 0) / levels.length
+    }));
+
+    // Sort by average level
+    averages.sort((a, b) => b.average - a.average);
+
+    // Update chart data
+    setChartData({
+      labels: averages.map(item => item.location),
+      datasets: [{
+        ...chartData.datasets[0],
+        data: averages.map(item => item.average)
+      }]
+    });
+
+    // Calculate statistics
+    const total = wasteLevels.length;
+    const critical = wasteLevels.filter(sensor => sensor.data >= 85).length;
+    const warning = wasteLevels.filter(sensor => sensor.data >= 70 && sensor.data < 85).length;
+    const normal = total - critical - warning;
+
+    setStats({
+      total,
+      critical,
+      warning,
+      normal
+    });
+  }, [wasteLevels]);
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
       },
-    ],
-  };
-
-  const options = getWasteLevelChartOptions(thresholds);
-
-  const handleZoneChange = (e) => {
-    setSelectedZone(e.target.value);
-  };
-
-  // Extract zone status
-  const getZoneStatus = (zone) => {
-    const level = wasteLevels[zone];
-    if (level >= thresholds.critical) return 'critical';
-    if (level >= thresholds.warning) return 'warning';
-    return 'normal';
+      title: {
+        display: true,
+        text: 'Niveaux de remplissage des conteneurs'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        title: {
+          display: true,
+          text: 'Niveau (%)'
+        }
+      }
+    }
   };
 
   return (
-    <div className="waste-level-analysis" ref={ref}>
-      <div className="waste-level-header">
-        <h3>Analyse des Niveaux de Déchets</h3>
-        <div className="zone-filter">
-          <select value={selectedZone} onChange={handleZoneChange}>
-            <option value="all">Toutes les zones</option>
-            {zones.map((zone) => (
-              <option key={zone} value={zone}>
-                {zone}
-              </option>
-            ))}
-          </select>
+    <div className="waste-level-analysis-container">
+      <div className="stats-grid">
+        <div className="stat-card">
+          <h4>Total des conteneurs</h4>
+          <p className="stat-value">{stats.total}</p>
+        </div>
+        <div className="stat-card">
+          <h4>Niveau critique</h4>
+          <p className="stat-value critical">{stats.critical}</p>
+        </div>
+        <div className="stat-card">
+          <h4>Niveau d'avertissement</h4>
+          <p className="stat-value warning">{stats.warning}</p>
+        </div>
+        <div className="stat-card">
+          <h4>Niveau normal</h4>
+          <p className="stat-value normal">{stats.normal}</p>
         </div>
       </div>
 
-      <div className="waste-level-content">
-        <div className="chart-container">
+      <div className="chart-container">
+        {stats.total > 0 ? (
           <Bar data={chartData} options={options} />
-        </div>
-
-        <div className="waste-level-stats">
-          {zones.map((zone) => {
-            const status = getZoneStatus(zone);
-            return (
-              <div key={zone} className={`waste-stat-card ${status}`}>
-                <div className="waste-zone-label">{zone}</div>
-                <div className="waste-level-indicator">
-                  <div className="level-bar">
-                    <div
-                      className="level-fill"
-                      style={{ width: `${wasteLevels[zone]}%` }}
-                    ></div>
-                  </div>
-                  <div className="level-value">{wasteLevels[zone]}%</div>
-                </div>
-                <div className="waste-status">
-                  {status === 'critical' ? 'Critique' : status === 'warning' ? 'Attention' : 'Normal'}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="waste-level-footer">
-        <div className="collection-info">
-          <div className="next-collection">
-            <span className="label">{COLLECTION_DATA.nextCollection.label}</span>
-            <span className="value">{COLLECTION_DATA.nextCollection.value}</span>
+        ) : (
+          <div className="no-data-message">
+            Aucune donnée disponible pour les niveaux de déchets
           </div>
-          <div className="last-update">
-            <span className="label">{COLLECTION_DATA.lastUpdate.label}</span>
-            <span className="value">{COLLECTION_DATA.lastUpdate.value}</span>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 });
+
+WasteLevelAnalysis.displayName = 'WasteLevelAnalysis';
 
 export default WasteLevelAnalysis;

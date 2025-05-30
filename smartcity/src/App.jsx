@@ -8,9 +8,8 @@ import { useToast } from './hooks/use-toast';
 import Index from './pages/pages_dash_technicien/Index';
 import Alerts from './pages/pages_dash_technicien/Alerts';
 import Maintenance from './pages/pages_dash_technicien/Maintenance';
-// import Sensors from './pages/pages_dash_technicien/Sensors';
 import NotFound from './pages/pages_dash_technicien/NotFound';
-
+// import LeafletMapComponent from './pages/pages_dash_technicien/map';
 import Dashboard from './pages/pages_dash_admin/Dashboard';
 import Alertsad from './pages/pages_dash_admin/Alerts_ad';
 import Users from './pages/pages_dash_admin/Users';
@@ -19,11 +18,11 @@ import Configuration from './pages/pages_dash_admin/Configuration';
 import HomePages from './pages/pages_home/HomesPages';
 import AuthPage from './pages/pages_home/AuthPage';
 
-
 import AnalysteDashboard from './pages/pages_dash_analyste/Dashboard';
 import PerformanceReportsPage from './pages/pages_dash_analyste/PerformanceReportsPage';
 
-
+import DataTrends from './components/components_dash_analyste/DataTrends/DataTrends';
+import WasteLevelAnalysis from './components/components_dash_analyste/WasteLevelAnalysis/WasteLevelAnalysis';
 
 import './styles/hom_authen.css';
 import './styles/global.css';
@@ -113,12 +112,20 @@ function App() {
         {/* Routes protégées pour l'analyste */}
         <Route path="/dl" element={
           <ProtectedRoute allowedRoles={['analyst']}>
-            <AnalysteDashboard/>
+            <AnalysteDashboard
+            energie={energie[0]} 
+            dechets={dechets[0]} 
+            transport={transport[0]} 
+            securite={securite[0]} />
           </ProtectedRoute>
         } />
         <Route path="/rapport" element={
           <ProtectedRoute allowedRoles={['analyst']}>
-            <PerformanceReportsPage />
+            <PerformanceReportsPage
+            energie={energie[0]} 
+            dechets={dechets[0]} 
+            transport={transport[0]} 
+            securite={securite[0]} />
           </ProtectedRoute>
         } />
 
@@ -135,9 +142,17 @@ function App() {
         } />
         <Route path="/technicien/maintenance" element={
           <ProtectedRoute allowedRoles={['technicien']}>
-            <Maintenance />
+            <Maintenance energie={energie[0]} 
+              dechets={dechets[0]} 
+              transport={transport[0]} 
+              securite={securite[0]}  />
           </ProtectedRoute>
         } />
+        {/* <Route path="/technicien/map" element={
+          <ProtectedRoute allowedRoles={['technicien']}>
+            <LeafletMapComponent />
+          </ProtectedRoute>
+        } /> */}
         <Route path="/technicien/*" element={
           <ProtectedRoute allowedRoles={['technicien']}>
             <NotFound />

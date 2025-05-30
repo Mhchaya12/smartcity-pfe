@@ -3,8 +3,8 @@ import { Bar, Line, Pie } from 'react-chartjs-2';
 import { FaPlus, FaEdit, FaTrash, FaCalendarAlt, FaDownload } from 'react-icons/fa';
 import Layout from '../../components/components_dash_analyste/Layout/Layout';
 import Header from '../../components/components_dash_analyste/Header/Header';
+import { socketService } from '../../services/socketService';
 import {
-  sampleReports,
   performanceChartColors,
   getPerformanceChartOptions,
   SENSOR_TYPES,
@@ -14,12 +14,16 @@ import {
   scheduleDayOptions,
   exportFormatOptions,
 } from '../../data/analysteData';
+import * as reportService from '../../services/reportService';
 import '../../styles/PerformanceReportsPage.css';
 
-const PerformanceReportsPage = () => {
+const PerformanceReportsPage = ({ energie, dechets, transport, securite }) => {
   // State for reports list and active report
   const [reports, setReports] = useState([]);
   const [activeReport, setActiveReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // UI state
   const [activeView, setActiveView] = useState('table');
@@ -27,6 +31,7 @@ const PerformanceReportsPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Form state
   const [reportForm, setReportForm] = useState({
@@ -38,6 +43,7 @@ const PerformanceReportsPage = () => {
     sensorTypes: [],
     selectedSensors: [],
     isPublic: false,
+    sensorData: []
   });
 
   // Schedule form state
@@ -49,74 +55,354 @@ const PerformanceReportsPage = () => {
     format: 'pdf',
   });
 
-  // Load sample data on component mount
+  // State for real-time sensor data
+  const [sensorData, setSensorData] = useState({
+    securite: [],
+    transport: [],
+    energie: [],
+    dechet: []
+  });
+
+  // Ajouter un nouvel état pour les données en temps réel
+  const [realTimeData, setRealTimeData] = useState({
+    securite: [],
+    transport: [],
+    energie: [],
+    dechet: []
+  });
+
+  // Form state for editing
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    period: '',
+    sensorTypes: [],
+    metrics: [],
+    sensorData: []
+  });
+
+  // Load reports on component mount
   useEffect(() => {
-    setReports(sampleReports);
-    setActiveReport(sampleReports[0]);
+    const fetchReports = async () => {
+      try {
+        setLoading(true);
+        const response = await reportService.getAllReports();
+        const reportsData = Array.isArray(response) ? response : [];
+        setReports(reportsData);
+        if (reportsData.length > 0) {
+          setActiveReport(reportsData[0]);
+        }
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+        setError('Erreur lors du chargement des rapports');
+        setReports([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReports();
   }, []);
 
-  // Prepare chart data for active report
-  const getChartData = () => {
-    if (!activeReport) return null;
+  // Update sensor data when props change
+  useEffect(() => {
+    const updateSensorData = () => {
+      const newData = {
+        securite: securite ? [{
+          id: 'securite-1',
+          value: securite.value || 0,
+          location: securite.location || 'Non spécifié',
+          timestamp: new Date().toISOString()
+        }] : [],
+        transport: transport ? [{
+          id: 'transport-1',
+          value: transport.value || 0,
+          location: transport.location || 'Non spécifié',
+          timestamp: new Date().toISOString()
+        }] : [],
+        energie: energie ? [{
+          id: 'energie-1',
+          value: energie.value || 0,
+          location: energie.location || 'Non spécifié',
+          timestamp: new Date().toISOString()
+        }] : [],
+        dechet: dechets ? [{
+          id: 'dechets-1',
+          value: dechets.value || 0,
+          location: dechets.location || 'Non spécifié',
+          timestamp: new Date().toISOString()
+        }] : []
+      };
+      setSensorData(newData);
+    };
+
+    updateSensorData();
+  }, [securite, transport, energie, dechets]);
+
+  // Ajouter useEffect pour la connexion socket
+  useEffect(() => {
+    // Connexion au socket
+    const socket = socketService.connect();
+
+    // S'abonner aux mises à jour des capteurs
+    const handleSecuriteUpdate = (data) => {
+      if (reportForm.sensorTypes.includes('Sécurité')) {
+        setReportForm(prev => ({
+          ...prev,
+          sensorData: [...prev.sensorData, {
+            type: 'Sécurité',
+            value: data.value || Math.floor(Math.random() * 100),
+            location: data.location || 'Zone A',
+            timestamp: new Date().toISOString(),
+            metrics: {
+              'Taux de Détection': data.value || Math.floor(Math.random() * 100),
+              'Temps de Réponse': Math.floor(Math.random() * 30)
+            }
+          }]
+        }));
+      }
+    };
+
+    const handleTransportUpdate = (data) => {
+      if (reportForm.sensorTypes.includes('Transport')) {
+        setReportForm(prev => ({
+          ...prev,
+          sensorData: [...prev.sensorData, {
+            type: 'Transport',
+            value: data.value || Math.floor(Math.random() * 100),
+            location: data.location || 'Rue Principale',
+            timestamp: new Date().toISOString(),
+            metrics: {
+              'Fluidité du Trafic': data.value || Math.floor(Math.random() * 100),
+              'Occupation Parking': Math.floor(Math.random() * 100)
+            }
+          }]
+        }));
+      }
+    };
+
+    const handleEnergieUpdate = (data) => {
+      if (reportForm.sensorTypes.includes('Énergie')) {
+        setReportForm(prev => ({
+          ...prev,
+          sensorData: [...prev.sensorData, {
+            type: 'Énergie',
+            value: data.value || Math.floor(Math.random() * 100),
+            location: data.location || 'Bâtiment Central',
+            timestamp: new Date().toISOString(),
+            metrics: {
+              'Consommation': data.value || Math.floor(Math.random() * 100),
+              'Production': Math.floor(Math.random() * 100)
+            }
+          }]
+        }));
+      }
+    };
+
+    const handleDechetUpdate = (data) => {
+      if (reportForm.sensorTypes.includes('Déchets')) {
+        setReportForm(prev => ({
+          ...prev,
+          sensorData: [...prev.sensorData, {
+            type: 'Déchets',
+            value: data.value || Math.floor(Math.random() * 100),
+            location: data.location || 'Zone de Collecte',
+            timestamp: new Date().toISOString(),
+            metrics: {
+              'Niveau de Remplissage': data.value || Math.floor(Math.random() * 100),
+              'Taux de Recyclage': Math.floor(Math.random() * 100)
+            }
+          }]
+        }));
+      }
+    };
+
+    // S'abonner aux événements
+    socketService.subscribeToSensorUpdates('Securite', handleSecuriteUpdate);
+    socketService.subscribeToSensorUpdates('Transport', handleTransportUpdate);
+    socketService.subscribeToSensorUpdates('Energie', handleEnergieUpdate);
+    socketService.subscribeToSensorUpdates('Dechet', handleDechetUpdate);
+
+    // Nettoyage lors du démontage du composant
+    return () => {
+      socketService.unsubscribeFromSensorUpdates('Securite', handleSecuriteUpdate);
+      socketService.unsubscribeFromSensorUpdates('Transport', handleTransportUpdate);
+      socketService.unsubscribeFromSensorUpdates('Energie', handleEnergieUpdate);
+      socketService.unsubscribeFromSensorUpdates('Dechet', handleDechetUpdate);
+      socketService.disconnect();
+    };
+  }, [reportForm.sensorTypes]);
+
+  // Modifier la fonction getReportSummary pour calculer les statistiques réelles
+  const getReportSummary = () => {
+    if (!activeReport) {
+      return { average: 0, critical: 0, normal: 0, alerts: 0 };
+    }
+
+    const data = activeReport.data || [];
+    if (data.length === 0) {
+      return { average: 0, critical: 0, normal: 0, alerts: 0 };
+    }
+
+    const values = data.map(item => Number(item.value));
+    const average = values.reduce((acc, val) => acc + val, 0) / values.length;
+    
+    const statusCounts = data.reduce((acc, item) => {
+      if (item.status === 'normal') acc.normal++;
+      else if (item.status === 'alerte') acc.alerts++;
+      else if (item.status === 'alerte-critique') acc.critical++;
+      return acc;
+    }, { normal: 0, alerts: 0, critical: 0 });
 
     return {
-      labels: activeReport.data.map((item) => item.metric),
-      datasets: [
-        {
-          label: activeReport.title,
-          data: activeReport.data.map((item) => item.value),
-          backgroundColor: performanceChartColors.backgroundColor,
-          borderColor: performanceChartColors.borderColor,
-          borderWidth: 1,
-        },
-      ],
+      average: Math.round(average),
+      critical: statusCounts.critical,
+      alerts: statusCounts.alerts,
+      normal: statusCounts.normal
     };
   };
 
-  // Chart options
-  const chartOptions = getPerformanceChartOptions(activeReport?.title);
+  // Modifier la fonction getChartData pour utiliser les données du socket
+  const getChartData = () => {
+    if (!activeReport) return null;
 
-  // Handle creating a new report
-  const handleCreateReport = () => {
-    // Simuler la génération de données pour chaque métrique sélectionnée
-    const generateMetricData = (metric) => {
+    const data = activeReport.data || [];
+    if (data.length === 0) {
       return {
-        metric: metric,
-        value: Math.floor(Math.random() * 100),
-        status: Math.random() > 0.7 ? 'alerte' : 'normal',
-        trend:
-          Math.random() > 0.5
-            ? '+' + Math.floor(Math.random() * 10) + '%'
-            : '-' + Math.floor(Math.random() * 10) + '%',
+        labels: ['En attente de données...'],
+        datasets: [{
+          label: activeReport.titre_rapport || 'Untitled Report',
+          data: [],
+          backgroundColor: performanceChartColors.backgroundColor,
+          borderColor: performanceChartColors.borderColor,
+          borderWidth: 1,
+        }],
       };
-    };
+    }
 
-    const newReport = {
-      id: reports.length + 1,
-      title: reportForm.title,
-      description: reportForm.description,
-      sector: reportForm.sensorTypes.join(', '),
-      createdAt: new Date().toISOString().split('T')[0],
-      lastUpdated: new Date().toISOString().split('T')[0],
-      createdBy: 'Current User',
-      isScheduled: false,
-      sensorTypes: reportForm.sensorTypes,
-      data: reportForm.metrics.map(generateMetricData),
-    };
+    // Grouper les données par type de capteur
+    const groupedData = data.reduce((acc, item) => {
+      const type = item.metric.split(' - ')[0];
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push({
+        value: Number(item.value),
+        timestamp: new Date(item.timestamp),
+        location: item.location
+      });
+      return acc;
+    }, {});
 
-    setReports([...reports, newReport]);
-    setActiveReport(newReport);
-    setShowCreateModal(false);
-    setReportForm({
-      title: '',
-      description: '',
-      sector: '',
-      period: 'month',
-      metrics: [],
-      sensorTypes: [],
-      selectedSensors: [],
-      isPublic: false,
-    });
+    // Créer les datasets pour chaque type de capteur
+    const datasets = Object.entries(groupedData).map(([type, values], index) => ({
+      label: type,
+      data: values.map(v => v.value),
+      backgroundColor: performanceChartColors.backgroundColor[index % performanceChartColors.backgroundColor.length],
+      borderColor: performanceChartColors.borderColor[index % performanceChartColors.borderColor.length],
+      borderWidth: 1,
+    }));
+
+    // Créer les labels basés sur les timestamps
+    const labels = Object.values(groupedData)[0]?.map(v => 
+      new Date(v.timestamp).toLocaleTimeString()
+    ) || [];
+
+    return {
+      labels,
+      datasets
+    };
+  };
+
+  // Modifier les options du graphique pour une meilleure visualisation
+  const chartOptions = {
+    ...getPerformanceChartOptions(activeReport?.title),
+    animation: {
+      duration: 0
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        title: {
+          display: true,
+          text: 'Valeur (%)'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Heure'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top'
+      },
+      tooltip: {
+        enabled: true,
+        mode: 'index',
+        intersect: false,
+        callbacks: {
+          label: function(context) {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y;
+            const dataIndex = context.dataIndex;
+            const location = Object.values(groupedData)[0][dataIndex]?.location;
+            return `${label}: ${value}% (${location})`;
+          }
+        }
+      }
+    }
+  };
+
+  // Modifier handleCreateReport pour inclure les données du socket
+  const handleCreateReport = async () => {
+    try {
+      // Formater les données des capteurs pour correspondre au schéma attendu
+      const formattedData = reportForm.sensorData.map(data => {
+        const metrics = Object.entries(data.metrics).map(([metric, value]) => ({
+          metric: `${data.type} - ${metric}`,
+          value: Number(value),
+          status: Number(value) > 80 ? 'normal' : 'alerte',
+          trend: '+0%',
+          location: data.location,
+          timestamp: data.timestamp
+        }));
+        return metrics;
+      }).flat();
+
+      const reportData = {
+        type: reportForm.sensorTypes.join(', '),
+        type_rapport: reportForm.period,
+        titre_rapport: reportForm.title,
+        description: reportForm.description,
+        data: formattedData
+      };
+
+      console.log('Sending report data:', reportData);
+
+      const newReport = await reportService.createReport(reportData);
+      setReports(prev => [...prev, newReport]);
+      setActiveReport(newReport);
+      setShowCreateModal(false);
+      setReportForm({
+        title: '',
+        description: '',
+        sector: '',
+        period: 'month',
+        metrics: [],
+        sensorTypes: [],
+        selectedSensors: [],
+        isPublic: false,
+        sensorData: []
+      });
+    } catch (error) {
+      console.error('Error creating report:', error);
+      setError('Failed to create report. Please try again.');
+    }
   };
 
   // Handle scheduling a report
@@ -142,35 +428,68 @@ const PerformanceReportsPage = () => {
   };
 
   // Handle deleting a report
-  const handleDeleteReport = () => {
-    const updatedReports = reports.filter((report) => report.id !== activeReport.id);
-    setReports(updatedReports);
-    setActiveReport(updatedReports.length > 0 ? updatedReports[0] : null);
-    setShowDeleteConfirm(false);
-  };
-
-  // Calculate summary statistics for active report
-  const getReportSummary = () => {
-    if (!activeReport || !activeReport.data.length) {
-      return { average: 0, critical: 0, normal: 0, alerts: 0 };
+  const handleDeleteReport = async () => {
+    try {
+      await reportService.deleteReport(activeReport._id);
+      const updatedReports = reports.filter(report => report._id !== activeReport._id);
+      setReports(updatedReports);
+      setActiveReport(updatedReports.length > 0 ? updatedReports[0] : null);
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      console.error('Error deleting report:', error);
     }
-
-    const average = Math.round(
-      activeReport.data.reduce((sum, item) => sum + item.value, 0) / activeReport.data.length
-    );
-
-    const critical = activeReport.data.filter((item) => item.status === 'alerte-critique').length;
-    const alerts = activeReport.data.filter((item) => item.status === 'alerte').length;
-    const normal = activeReport.data.filter((item) => item.status === 'normal').length;
-
-    return { average, critical, alerts, normal };
   };
+
+  // Fonction pour ouvrir le modal de modification
+  const handleEditClick = (report) => {
+    setEditForm({
+      title: report.titre_rapport || '',
+      description: report.description || '',
+      period: report.type_rapport || 'month',
+      sensorTypes: report.type ? report.type.split(', ') : [],
+      metrics: report.data ? report.data.map(item => item.metric) : [],
+      sensorData: report.data || []
+    });
+    setShowEditModal(true);
+  };
+
+  // Fonction pour gérer la modification du rapport
+  const handleEditReport = async () => {
+    try {
+      const updatedData = {
+        type: editForm.sensorTypes.join(', '),
+        type_rapport: editForm.period,
+        titre_rapport: editForm.title,
+        description: editForm.description,
+        data: editForm.sensorData
+      };
+
+      const updatedReport = await reportService.updateReport(activeReport._id, updatedData);
+      
+      setReports(prev => prev.map(report => 
+        report._id === activeReport._id ? updatedReport : report
+      ));
+      setActiveReport(updatedReport);
+      setShowEditModal(false);
+    } catch (error) {
+      console.error('Error updating report:', error);
+      setError('Failed to update report. Please try again.');
+    }
+  };
+
+  // Fonction de filtrage des rapports par nom
+  const filteredReports = reports.filter(report => 
+    report.titre_rapport?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const summary = getReportSummary();
 
   return (
     <Layout>
-      <Header />
+      <Header
+          title="Tableau de bord Analyste"
+          subtitle="Bienvenue sur votre espace d'analyse des données urbaines"
+      />
       <div className="performance-reports-page">
         <header className="reports-header">
           <h1>Rapports de Performance</h1>
@@ -186,58 +505,77 @@ const PerformanceReportsPage = () => {
             <div className="sidebar-header">
               <h3>Mes Rapports</h3>
               <div className="search-container">
-                <input type="text" placeholder="Search reports..." className="search-input" />
+                <input 
+                  type="text" 
+                  placeholder="Rechercher un rapport par nom..." 
+                  className="search-input"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </div>
 
             <div className="reports-list">
-              {reports.map((report) => (
-                <div
-                  key={report.id}
-                  className={`report-item ${activeReport && activeReport.id === report.id ? 'active' : ''}`}
-                  onClick={() => setActiveReport(report)}
-                >
-                  <div className="report-item-header">
-                    <h4>{report.title}</h4>
-                    <span className="report-sector">{report.sector}</span>
-                  </div>
-                  <div className="report-item-meta">
-                    <span className="report-date">Mis à jour: {report.lastUpdated}</span>
-                    {report.isScheduled && (
-                      <span className="report-scheduled">
-                        <FaCalendarAlt /> {report.scheduleFrequency}
+              {loading ? (
+                <div className="loading">Chargement des rapports...</div>
+              ) : error ? (
+                <div className="error">{error}</div>
+              ) : filteredReports.length === 0 ? (
+                <div className="no-reports">Aucun rapport trouvé</div>
+              ) : (
+                filteredReports.map((report) => (
+                  <div
+                    key={report._id || Math.random()}
+                    className={`report-item ${activeReport && activeReport._id === report._id ? 'active' : ''}`}
+                    onClick={() => setActiveReport(report)}
+                  >
+                    <div className="report-item-header">
+                      <h4>{report.titre_rapport || 'Sans titre'}</h4>
+                      <span className="report-sector">{report.type || 'Non spécifié'}</span>
+                    </div>
+                    <div className="report-item-meta">
+                      <span className="report-date">
+                        Mis à jour: {report.dateGeneration ? new Date(report.dateGeneration).toLocaleDateString() : 'N/A'}
                       </span>
-                    )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </aside>
 
           <main className="reports-content">
-            {activeReport ? (
+            {loading ? (
+              <div className="loading">Chargement...</div>
+            ) : error ? (
+              <div className="error">{error}</div>
+            ) : !activeReport ? (
+              <div className="no-report-selected">
+                <h3>Aucun Rapport Sélectionné</h3>
+                <p>Veuillez sélectionner un rapport dans la barre latérale ou en créer un nouveau.</p>
+                <button className="create-report-button" onClick={() => setShowCreateModal(true)}>
+                  <FaPlus /> Créer un Nouveau Rapport
+                </button>
+              </div>
+            ) : (
               <>
                 <div className="report-header">
                   <div className="report-title-section">
-                    <h2>{activeReport.title}</h2>
-                    <p className="report-description">{activeReport.description}</p>
+                    <h2>{activeReport.titre_rapport || 'Sans titre'}</h2>
+                    <p className="report-description">{activeReport.description || 'Aucune description'}</p>
                     <div className="report-meta">
-                      <span>Secteur: {activeReport.sector}</span>
-                      <span>Créé le: {activeReport.createdAt}</span>
-                      <span>Dernière mise à jour: {activeReport.lastUpdated}</span>
-                      <span>Auteur: {activeReport.createdBy}</span>
+                      <span>Secteur: {activeReport.type || 'Non spécifié'}</span>
+                      <span>Type: {activeReport.type_rapport || 'Non spécifié'}</span>
+                      <span>Date: {activeReport.dateGeneration ? new Date(activeReport.dateGeneration).toLocaleDateString() : 'N/A'}</span>
                     </div>
                   </div>
 
                   <div className="report-actions">
                     <button
                       className="report-action-button edit"
-                      onClick={() => alert('Edit functionality would open here')}
+                      onClick={() => handleEditClick(activeReport)}
                     >
                       <FaEdit /> Modifier
-                    </button>
-                    <button className="report-action-button export">
-                      <FaDownload /> Exporter
                     </button>
                     <button
                       className="report-action-button delete"
@@ -276,7 +614,7 @@ const PerformanceReportsPage = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {activeReport.data.map((item, index) => (
+                          {activeReport?.data?.map((item, index) => (
                             <tr key={index}>
                               <td>{item.metric}</td>
                               <td>{item.value}%</td>
@@ -293,7 +631,13 @@ const PerformanceReportsPage = () => {
                                 {item.trend}
                               </td>
                             </tr>
-                          ))}
+                          )) || (
+                            <tr>
+                              <td colSpan="4" className="no-data-message">
+                                No data available for this report
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -336,31 +680,35 @@ const PerformanceReportsPage = () => {
                       <div className="summary-card">
                         <h4>Performance Moyenne</h4>
                         <p>{summary.average}%</p>
+                        <div className="summary-trend">
+                          {summary.average > 80 ? '↑' : summary.average < 60 ? '↓' : '→'}
+                        </div>
                       </div>
                       <div className="summary-card">
                         <h4>Alertes Critiques</h4>
                         <p>{summary.critical}</p>
+                        <div className="summary-trend critical">
+                          {summary.critical > 0 ? '⚠️' : '✓'}
+                        </div>
                       </div>
                       <div className="summary-card">
                         <h4>Alertes</h4>
                         <p>{summary.alerts}</p>
+                        <div className="summary-trend warning">
+                          {summary.alerts > 0 ? '⚠️' : '✓'}
+                        </div>
                       </div>
                       <div className="summary-card">
                         <h4>Métriques Normales</h4>
                         <p>{summary.normal}</p>
+                        <div className="summary-trend success">
+                          {summary.normal > 0 ? '✓' : '⚠️'}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </>
-            ) : (
-              <div className="no-report-selected">
-                <h3>Aucun Rapport Sélectionné</h3>
-                <p>Veuillez sélectionner un rapport dans la barre latérale ou en créer un nouveau.</p>
-                <button className="create-report-button" onClick={() => setShowCreateModal(true)}>
-                  <FaPlus /> Créer un Nouveau Rapport
-                </button>
-              </div>
             )}
           </main>
         </div>
@@ -370,10 +718,8 @@ const PerformanceReportsPage = () => {
           <div className="modal-overlay">
             <div className="modal create-report-modal">
               <div className="modal-header">
-                <h3>Créer un Nouveau Rapport de Capteurs</h3>
-                <button className="close-button" onClick={() => setShowCreateModal(false)}>
-                  ×
-                </button>
+                <h3>Créer un Nouveau Rapport</h3>
+                <button className="close-button" onClick={() => setShowCreateModal(false)}>×</button>
               </div>
               <div className="modal-body">
                 <div className="form-group">
@@ -458,6 +804,36 @@ const PerformanceReportsPage = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Données des Capteurs</label>
+                  <div className="data-list">
+                    {reportForm.sensorData.map((data, index) => (
+                      <div key={index} className="data-item">
+                        <div className="data-header">
+                          <span className="data-type">{data.type}</span>
+                          <span className="data-location">{data.location}</span>
+                          <span className="data-time">
+                            {new Date(data.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <div className="data-metrics">
+                          {Object.entries(data.metrics).map(([metric, value]) => (
+                            <div key={metric} className="metric-item">
+                              <span className="metric-name">{metric}</span>
+                              <span className="metric-value">{value}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {reportForm.sensorData.length === 0 && (
+                      <div className="no-data-message">
+                        En attente de données des capteurs...
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="modal-footer">
@@ -573,15 +949,137 @@ const PerformanceReportsPage = () => {
                 </button>
               </div>
               <div className="modal-body">
-                <p>Are you sure you want to delete the report "{activeReport.title}"?</p>
-                <p className="warning">This action cannot be undone.</p>
+                <p>
+                Êtes-vous sûr de vouloir supprimer le rapport{activeReport.title}?</p>
+                {/* <p className="warning">Cette action ne peut pas être annulée.</p> */}
               </div>
               <div className="modal-footer">
                 <button className="cancel-button" onClick={() => setShowDeleteConfirm(false)}>
-                  Cancel
+                  Annuler
                 </button>
                 <button className="delete-button" onClick={handleDeleteReport}>
-                  Delete Report
+                  Supprimer le Rapport
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Report Modal */}
+        {showEditModal && (
+          <div className="modal-overlay">
+            <div className="modal edit-report-modal">
+              <div className="modal-header">
+                <h3>Modifier le Rapport</h3>
+                <button className="close-button" onClick={() => setShowEditModal(false)}>×</button>
+              </div>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>Titre du Rapport</label>
+                  <input
+                    type="text"
+                    value={editForm.title}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    placeholder="Entrez le titre du rapport"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    placeholder="Entrez la description du rapport"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Types de Capteurs</label>
+                  <div className="checkbox-group">
+                    {SENSOR_TYPES.map((type) => (
+                      <label key={type} className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={editForm.sensorTypes.includes(type)}
+                          onChange={(e) => {
+                            const updatedTypes = e.target.checked
+                              ? [...editForm.sensorTypes, type]
+                              : editForm.sensorTypes.filter((t) => t !== type);
+                            setEditForm({
+                              ...editForm,
+                              sensorTypes: updatedTypes,
+                              metrics: updatedTypes.flatMap((t) => METRICS_BY_TYPE[t] || [])
+                            });
+                          }}
+                        />
+                        {type}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Période de Rapport</label>
+                  <select
+                    value={editForm.period}
+                    onChange={(e) => setEditForm({ ...editForm, period: e.target.value })}
+                  >
+                    {reportPeriodOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Données des Capteurs</label>
+                  <div className="data-list">
+                    {editForm.sensorData.map((data, index) => (
+                      <div key={index} className="data-item">
+                        <div className="data-header">
+                          <span className="data-type">{data.metric}</span>
+                          <span className="data-location">{data.location}</span>
+                          <span className="data-time">
+                            {new Date(data.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <div className="data-metrics">
+                          <div className="metric-item">
+                            <span className="metric-name">Valeur</span>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={data.value}
+                              onChange={(e) => {
+                                const newData = [...editForm.sensorData];
+                                newData[index] = {
+                                  ...data,
+                                  value: Number(e.target.value),
+                                  status: Number(e.target.value) > 80 ? 'normal' : 'alerte'
+                                };
+                                setEditForm({ ...editForm, sensorData: newData });
+                              }}
+                              className="metric-value-input"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="cancel-button" onClick={() => setShowEditModal(false)}>
+                  Annuler
+                </button>
+                <button
+                  className="edit-button"
+                  onClick={handleEditReport}
+                  disabled={!editForm.title || editForm.sensorData.length === 0}
+                >
+                  Enregistrer les Modifications
                 </button>
               </div>
             </div>

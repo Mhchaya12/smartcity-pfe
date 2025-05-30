@@ -13,9 +13,13 @@ const Dashboard = ({energie, dechets, transport, securite}) => {
   const [historiquesActifs, setHistoriquesActifs] = useState([]);
   const [historiquesTraites, setHistoriquesTraites] = useState([]);
   const [ongletActif, setOngletActif] = useState('Actifs');
-  const [termeRecherche, setTermeRecherche] = useState('');
   const [vueActive, setVueActive] = useState('dashboard');
+  const [searchTerm, setSearchTerm] = useState('');
   const wasteLevelsRef = useRef(null);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
   useEffect(() => {
     // Mettre à jour les données des capteurs lorsque de nouvelles données sont reçues
@@ -69,32 +73,48 @@ const Dashboard = ({energie, dechets, transport, securite}) => {
       });
     }
 
-    console.log('New data being added:', newData);
+    // Mettre à jour les données des capteurs en conservant l'historique
     setDonneesCapteurs(prevData => {
-      const updatedData = [...prevData, ...newData];
-      console.log('Updated donneesCapteurs:', updatedData);
+      const updatedData = [...prevData];
+      newData.forEach(newItem => {
+        const existingIndex = updatedData.findIndex(item => item.id === newItem.id);
+        if (existingIndex !== -1) {
+          // Conserver l'ancienne entrée comme historique
+          const oldEntry = { ...updatedData[existingIndex] };
+          oldEntry.isHistorical = true;
+          updatedData[existingIndex] = newItem;
+          updatedData.push(oldEntry);
+        } else {
+          updatedData.push(newItem);
+        }
+      });
       return updatedData;
     });
     
     // Mettre à jour les historiques actifs
     const newActifs = newData.filter(item => item.status !== SensorStatus.OPERATIONAL);
-    setHistoriquesActifs(prevActifs => [...prevActifs, ...newActifs]);
+    setHistoriquesActifs(prevActifs => {
+      const uniqueActifs = [...prevActifs];
+      newActifs.forEach(newItem => {
+        const existingIndex = uniqueActifs.findIndex(item => item.id === newItem.id);
+        if (existingIndex !== -1) {
+          uniqueActifs[existingIndex] = newItem;
+        } else {
+          uniqueActifs.push(newItem);
+        }
+      });
+      return uniqueActifs;
+    });
   }, [energie, dechets, transport, securite]);
 
-  const donneesFiltrees = donneesCapteurs.filter(item => {
-    console.log('Search term:', termeRecherche);
-    console.log('Item type:', item.type);
-    return item.type && item.type.toLowerCase().includes(termeRecherche.toLowerCase());
-  });
+  const donneesFiltrees = donneesCapteurs
+    .filter(item => 
+      item.type.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const gererChangementVue = () => {
     setVueActive(vueActive === 'dashboard' ? 'historique' : 'dashboard');
-    setTermeRecherche('');
-  };
-
-  const gererRecherche = (e) => {
-    console.log('Search input:', e.target.value);
-    setTermeRecherche(e.target.value);
   };
 
   const getStatusClass = (status) => {
@@ -122,18 +142,9 @@ const Dashboard = ({energie, dechets, transport, securite}) => {
       />
       <div className="dashboard">
         <div className="controls">
-          {vueActive === 'historique' && (
-            <input
-              type="text"
-              placeholder="Rechercher dans l'historique..."
-              value={termeRecherche}
-              onChange={gererRecherche}
-              style={{ marginBottom: '20px', padding: '10px', width: '300px' }}
-            />
-          )}
           <button
             onClick={gererChangementVue}
-            style={{ marginBottom: '20px', padding: '10px 20px', cursor: 'pointer', marginLeft: vueActive === 'historique' ? '20px' : '0' }}
+            className="view-toggle-button"
           >
             {vueActive === 'dashboard' ? "Voir l'historique" : 'Retour au tableau de bord'}
           </button>
@@ -158,34 +169,49 @@ const Dashboard = ({energie, dechets, transport, securite}) => {
         ) : (
           <div className="historique-view">
             <h2>Historique des capteurs</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>Date</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>ID</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>Type</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>Lieu</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>Données</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>Statut</th>
-
-                </tr>
-              </thead>
-              <tbody>
-                {donneesFiltrees.map((item) => (
-                  <tr key={item.id}>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.date}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.id}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.type}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.location}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.data}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                      <span className={getStatusClass(item.status)}>{item.status}</span>
-                    </td>
-                    
+            <div className="search-container">
+              <select
+                value={searchTerm}
+                onChange={handleSearch}
+                className="search-select"
+              >
+                <option value="">Tous les types</option>
+                <option value="Énergie">Énergie</option>
+                <option value="Déchets">Déchets</option>
+                <option value="Transport">Transport</option>
+                <option value="Sécurité">Sécurité</option>
+              </select>
+            </div>
+            <div className="table-container">
+              <table className="historique-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Lieu</th>
+                    <th>Données</th>
+                    <th>Statut</th>
+                    <th>Pourcentage</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {donneesFiltrees.map((item) => (
+                    <tr key={`${item.id}-${item.date}`} className={item.isHistorical ? 'historical-entry' : ''}>
+                      <td>{item.date}</td>
+                      <td>{item.id}</td>
+                      <td>{item.type}</td>
+                      <td>{item.location}</td>
+                      <td>{item.data}</td>
+                      <td>
+                        <span className={getStatusClass(item.status)}>{item.status}</span>
+                      </td>
+                      <td>{item.pourcentage}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

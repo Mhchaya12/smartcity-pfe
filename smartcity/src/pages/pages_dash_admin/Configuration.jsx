@@ -25,7 +25,6 @@ const Configuration = () => {
   // État pour l'historique et l'affichage
   const [history, setHistory] = useState([]);
   const [vueActive, setVueActive] = useState('config'); // 'config' ou 'historique'
-  const [termeRecherche, setTermeRecherche] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -139,18 +138,7 @@ const Configuration = () => {
 
   const gererChangementVue = () => {
     setVueActive(vueActive === 'config' ? 'historique' : 'config');
-    setTermeRecherche(''); // Réinitialiser la recherche lors du changement de vue
   };
-
-  const gererRecherche = (e) => {
-    setTermeRecherche(e.target.value);
-  };
-
-  const historiqueFiltree = Array.isArray(history) ? history.filter(item =>
-    Object.values(item).some(val => 
-      String(val).toLowerCase().includes(termeRecherche.toLowerCase())
-    )
-  ) : [];
 
   return (
     <Layout>
@@ -165,16 +153,6 @@ const Configuration = () => {
         )}
 
         <div className="controls">
-          {vueActive === 'historique' && (
-            <div className="search-container">
-              <input
-                type="text"
-                placeholder="Rechercher dans l'historique..."
-                value={termeRecherche}
-                onChange={gererRecherche}
-              />
-            </div>
-          )}
           <button onClick={gererChangementVue}>
             {vueActive === 'config' ? "Voir l'historique" : 'Retour à la configuration'}
           </button>
@@ -370,11 +348,11 @@ const Configuration = () => {
               <div className="historique-header">
                 <h2>Historique des Configurations</h2>
                 <div className="results-count">
-                  {historiqueFiltree.length} configuration(s) trouvée(s)
+                  {history.length} configuration(s) trouvée(s)
                 </div>
               </div>
               
-              {historiqueFiltree.length === 0 ? (
+              {history.length === 0 ? (
                 <Paper elevation={2} className="empty-state">
                   <p>Aucune configuration enregistrée pour le moment.</p>
                   <p className="secondary-text">
@@ -402,7 +380,7 @@ const Configuration = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {historiqueFiltree.map((entry, index) => (
+                      {history.map((entry, index) => (
                         <TableRow 
                           key={entry._id || index}
                           className={index % 2 === 0 ? 'table-row-even' : 'table-row-odd table-row'}

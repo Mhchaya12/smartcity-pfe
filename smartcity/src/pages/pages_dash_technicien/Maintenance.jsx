@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/components_dash_technicien/layout/DashboardLayout';
 import { MaintenancePlanner } from '../../components/components_dash_technicien/dashboard/MaintenancePlanner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/components_dash_technicien/ui/card';
@@ -6,46 +6,202 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/compo
 import { Input } from '../../components/components_dash_technicien/ui/input';
 import { Button } from '../../components/components_dash_technicien/ui/button';
 import { useToast } from '../../components/components_dash_technicien/ui/use-toast';
-import { maintenanceTasks, sensors } from '../../data/mockData';
-import { Search, Filter, Clock, CheckCheck, Settings } from 'lucide-react';
+import { 
+  Search, 
+  Filter, 
+  Clock, 
+  CheckCheck, 
+  Settings,
+  AlertCircle,
+  CheckCircle2,
+  Activity
+} from 'lucide-react';
+import { maintenanceService } from '../../services/maintenanceService';
+import { sensorService } from '../../services/sensorService';
+import { socketService } from '../../services/socketService';
 
 const Maintenance = () => {
-  const [tasks, setTasks] = useState(maintenanceTasks);
+  const [tasks, setTasks] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sensors, setSensors] = useState({});
   const { toast } = useToast();
+  
+  useEffect(() => {
+    fetchMaintenanceTasks();
+    fetchSensors();
+    
+    // S'abonner aux mises à jour des capteurs
+    const handleSensorUpdate = (data) => {
+      setTasks(currentTasks => {
+        return currentTasks.map(task => {
+          if (task.sensorId === data.sensorId) {
+            return {
+              ...task,
+              sensorStatus: data.status,
+              sensorName: data.name || task.sensorName
+            };
+          }
+          return task;
+        });
+      });
+    };
+
+    // S'abonner aux mises à jour de chaque type de capteur
+    socketService.subscribeToSensorUpdates('dechet', handleSensorUpdate);
+    socketService.subscribeToSensorUpdates('energie', handleSensorUpdate);
+    socketService.subscribeToSensorUpdates('securite', handleSensorUpdate);
+    socketService.subscribeToSensorUpdates('transport', handleSensorUpdate);
+
+    return () => {
+      // Nettoyer les abonnements
+      socketService.unsubscribeFromSensorUpdates('dechet', handleSensorUpdate);
+      socketService.unsubscribeFromSensorUpdates('energie', handleSensorUpdate);
+      socketService.unsubscribeFromSensorUpdates('securite', handleSensorUpdate);
+      socketService.unsubscribeFromSensorUpdates('transport', handleSensorUpdate);
+    };
+  }, []);
+
+  const fetchSensors = async () => {
+    try {
+      const allSensors = await sensorService.getAllSensors();
+      console.log('Fetched all sensors:', allSensors);
+      
+      // Normaliser les données des capteurs
+      const normalizedSensors = {
+        dechet: allSensors.dechets || [],
+        energie: allSensors.energie || [],
+        securite: allSensors.securite || [],
+        transport: allSensors.transport || []
+      };
+      
+      console.log('Normalized sensors:', normalizedSensors);
+      setSensors(normalizedSensors);
+    } catch (error) {
+      console.error('Error fetching sensors:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les données des capteurs",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getSensorName = (sensorId, sensorType) => {
+    if (!sensors[sensorType]) {
+      console.log(`No sensors found for type: ${sensorType}`);
+      return '';
+    }
+    
+    const sensor = sensors[sensorType].find(s => s._id === sensorId);
+    if (!sensor) {
+      console.log(`No sensor found with ID: ${sensorId} for type: ${sensorType}`);
+      return '';
+    }
+    
+    return sensor.localisation || '';
+  };
+
+  const fetchMaintenanceTasks = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await maintenanceService.getAllMaintenanceTasks();
+      console.log('Maintenance tasks data:', data);
+      
+      // Transform the data to match the frontend format
+      const transformedTasks = data.map(task => {
+        const sensorName = getSensorName(task.sensorId, task.sensorType);
+        console.log(`Task ${task._id}: sensorId=${task.sensorId}, sensorType=${task.sensorType}, sensorName=${sensorName}`);
+        
+        return {
+          id: task._id,
+          sensorId: task.sensorId,
+          taskType: task.typeTask,
+          dueDate: new Date(task.date),
+          priority: task.priorite,
+          status: task.status,
+          notes: task.description,
+          sensorName: sensorName,
+          assignedTo: task.assignedTo || 'Technicien',
+          sensorStatus: task.sensorStatus || 'operational',
+          location: task.location || sensorName,
+          sensorType: task.sensorType || 'default'
+        };
+      });
+      setTasks(transformedTasks);
+    } catch (error) {
+      console.error('Error fetching maintenance tasks:', error);
+      setError('Impossible de charger les tâches de maintenance');
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les tâches de maintenance",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const pendingTasks = tasks.filter(t => t.status === 'pending');
   const inProgressTasks = tasks.filter(t => t.status === 'in_progress');
   const completedTasks = tasks.filter(t => t.status === 'completed');
   
-  const criticalTasks = tasks.filter(t => t.priority === 'critical' && t.status !== 'completed').length;
-  const highTasks = tasks.filter(t => t.priority === 'high' && t.status !== 'completed').length;
-  const mediumTasks = tasks.filter(t => t.priority === 'medium' && t.status !== 'completed').length;
-  const lowTasks = tasks.filter(t => t.priority === 'low' && t.status !== 'completed').length;
+  // Ne compter que les tâches actives (en attente et en cours)
+  const activeTasks = [...pendingTasks, ...inProgressTasks];
+  const criticalTasks = activeTasks.filter(t => t.priority === 'critical').length;
+  const highTasks = activeTasks.filter(t => t.priority === 'high').length;
+  const mediumTasks = activeTasks.filter(t => t.priority === 'medium').length;
+  const lowTasks = activeTasks.filter(t => t.priority === 'low').length;
+
+  // Statistiques des états des capteurs
+  const sensorStatusCounts = {
+    operational: tasks.filter(t => t.sensorStatus === 'operational').length,
+    warning: tasks.filter(t => t.sensorStatus === 'warning').length,
+    critical: tasks.filter(t => t.sensorStatus === 'critical').length,
+    maintenance: tasks.filter(t => t.sensorStatus === 'maintenance').length,
+    offline: tasks.filter(t => t.sensorStatus === 'offline').length
+  };
   
-  const handleStatusChange = (taskId, newStatus) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, status: newStatus } : task
-    ));
-    
-    const statusText = newStatus === 'in_progress' ? 'démarrée' : 'terminée';
-    
-    toast({
-      title: `Tâche ${statusText}`,
-      description: `La tâche a été marquée comme ${statusText}.`,
-    });
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      const taskToUpdate = tasks.find(t => t.id === taskId);
+      if (!taskToUpdate) return;
+
+      await maintenanceService.updateMaintenanceTask(taskId, {
+        ...taskToUpdate,
+        status: newStatus
+      });
+
+      setTasks(tasks.map(task => 
+        task.id === taskId ? { ...task, status: newStatus } : task
+      ));
+      
+      const statusText = newStatus === 'in_progress' ? 'démarrée' : 'terminée';
+      
+      toast({
+        title: `Tâche ${statusText}`,
+        description: `La tâche a été marquée comme ${statusText}.`,
+      });
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut de la tâche",
+        variant: "destructive"
+      });
+    }
   };
   
   const filterTasks = (taskList) => {
     return taskList.filter(task => {
-      const sensor = sensors.find(s => s.id === task.sensorId) || {};
       return (
         task.sensorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (task.assignedTo?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
         task.sensorId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.taskType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (sensor.location?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
+        task.taskType.toLowerCase().includes(searchQuery.toLowerCase())
       );
     });
   };
@@ -54,6 +210,42 @@ const Maintenance = () => {
   const filteredInProgressTasks = filterTasks(inProgressTasks);
   const filteredCompletedTasks = filterTasks(completedTasks);
 
+  const taskCounts = {
+    critical: criticalTasks,
+    high: highTasks,
+    medium: mediumTasks,
+    low: lowTasks
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-red-500 text-center">
+            <h2 className="text-xl font-bold mb-2">Erreur</h2>
+            <p>{error}</p>
+            <Button 
+              onClick={fetchMaintenanceTasks}
+              className="mt-4"
+            >
+              Réessayer
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -61,55 +253,8 @@ const Maintenance = () => {
         <p className="text-muted-foreground mt-1">Gérez les tâches de maintenance des capteurs du système.</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-red-50 border-tech-red/20">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center">
-              <div className="h-10 w-10 rounded-full bg-tech-red/20 flex items-center justify-center mb-2">
-                <Clock className="h-5 w-5 text-tech-red" />
-              </div>
-              <p className="text-sm font-medium text-muted-foreground">Critique</p>
-              <h2 className="text-2xl font-bold text-tech-red">{criticalTasks}</h2>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-amber-50 border-tech-yellow/20">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center">
-              <div className="h-10 w-10 rounded-full bg-tech-yellow/20 flex items-center justify-center mb-2">
-                <Clock className="h-5 w-5 text-tech-yellow" />
-              </div>
-              <p className="text-sm font-medium text-muted-foreground">Élevée</p>
-              <h2 className="text-2xl font-bold text-tech-yellow">{highTasks}</h2>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-blue-50 border-tech-blue/20">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center">
-              <div className="h-10 w-10 rounded-full bg-tech-blue/20 flex items-center justify-center mb-2">
-                <Clock className="h-5 w-5 text-tech-blue" />
-              </div>
-              <p className="text-sm font-medium text-muted-foreground">Moyenne</p>
-              <h2 className="text-2xl font-bold text-tech-blue">{mediumTasks}</h2>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-green-50 border-tech-green/20">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center">
-              <div className="h-10 w-10 rounded-full bg-tech-green/20 flex items-center justify-center mb-2">
-                <Clock className="h-5 w-5 text-tech-green" />
-              </div>
-              <p className="text-sm font-medium text-muted-foreground">Basse</p>
-              <h2 className="text-2xl font-bold text-tech-green">{lowTasks}</h2>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      
+
       
       <Card>
         <CardHeader className="pb-0">
@@ -163,8 +308,7 @@ const Maintenance = () => {
               ) : (
                 <MaintenancePlanner 
                   tasks={filteredPendingTasks} 
-                  onStatusChange={handleStatusChange} 
-                  sensors={sensors}
+                  onStatusChange={handleStatusChange}
                 />
               )}
             </TabsContent>
@@ -177,8 +321,7 @@ const Maintenance = () => {
               ) : (
                 <MaintenancePlanner 
                   tasks={filteredInProgressTasks} 
-                  onStatusChange={handleStatusChange} 
-                  sensors={sensors}
+                  onStatusChange={handleStatusChange}
                 />
               )}
             </TabsContent>
@@ -191,7 +334,6 @@ const Maintenance = () => {
               ) : (
                 <MaintenancePlanner 
                   tasks={filteredCompletedTasks}
-                  sensors={sensors}
                 />
               )}
             </TabsContent>

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle, faCheckCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
-import { AlertType, initialActiveAlerts } from '../../../data/adminData'; // Import from adminData.js
+import axios from 'axios';
 import './Alerts.css';
 
 const Alerts = () => {
@@ -10,37 +10,49 @@ const Alerts = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchAlerts();
+  const fetchAlerts = useCallback(async () => {
+    try {
+      const response = await axios.get('http://localhost:5050/api/alerts');
+      // Trier les alertes par date et ne garder que les 2 plus récentes
+      const sortedAlerts = response.data
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 2);
+      setAlerts(sortedAlerts);
+      setError(null);
+    } catch (err) {
+      console.error('Erreur lors de la récupération des alertes:', err);
+      setError('Échec de la récupération des alertes');
+    }
   }, []);
 
-  const fetchAlerts = () => {
-    setLoading(true);
+  useEffect(() => {
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 5000);
+    return () => clearInterval(interval);
+  }, [fetchAlerts]);
+
+  const handleToggleResolved = async (id) => {
     try {
-      setTimeout(() => {
-        setAlerts(initialActiveAlerts); // Use imported data
-        setError(null);
-        setLoading(false);
-      }, 500);
+      await axios.put(`http://localhost:5050/api/alerts/${id}/resolve`);
+      // Rafraîchir les alertes pour avoir les 2 plus récentes
+      fetchAlerts();
     } catch (err) {
-      setError('Échec de la récupération des alertes');
-      console.error('Erreur lors de la récupération des alertes:', err);
-      setLoading(false);
+      console.error('Erreur lors de la résolution de l\'alerte:', err);
     }
   };
 
-  const handleToggleResolved = (id) => {
-    setAlerts(alerts.map((alert) =>
-      alert.id === id ? { ...alert, resolved: !alert.resolved } : alert
-    ));
-  };
-
-  const handleDeleteAlert = (e, id) => {
+  const handleDeleteAlert = async (e, id) => {
     e.stopPropagation();
-    setAlerts(alerts.filter((alert) => alert.id !== id));
+    try {
+      await axios.delete(`http://localhost:5050/api/alerts/${id}`);
+      // Rafraîchir les alertes pour avoir les 2 plus récentes
+      fetchAlerts();
+    } catch (err) {
+      console.error('Erreur lors de la suppression de l\'alerte:', err);
+    }
   };
 
-  if (loading) {
+  if (loading && !alerts.length) {
     return (
       <div className="alerts-card">
         <h3>Alertes en Temps Réel</h3>
@@ -69,21 +81,21 @@ const Alerts = () => {
         ) : (
           alerts.map((alert) => (
             <div
-              key={alert.id}
-              className={`alert-item ${alert.type.toLowerCase()} ${alert.resolved ? 'resolved' : ''}`}
-              onClick={() => handleToggleResolved(alert.id)}
+              key={alert._id}
+              className={`alert-item ${alert.etat.toLowerCase()} ${alert.resolu ? 'resolved' : ''}`}
+              onClick={() => handleToggleResolved(alert._id)}
             >
               <FontAwesomeIcon
-                icon={alert.resolved ? faCheckCircle : faExclamationCircle}
+                icon={alert.resolu ? faCheckCircle : faExclamationCircle}
                 className="alert-icon"
               />
               <span className="alert-message">
-                {alert.message} - {alert.location} ({alert.timestamp.toLocaleString()})
+                {alert.description} - {alert.local} ({new Date(alert.date).toLocaleString()})
               </span>
-              {alert.resolved && <span className="resolved-tag">Résolue</span>}
+              {alert.resolu && <span className="resolved-tag">Résolue</span>}
               <button
                 className="delete-btn"
-                onClick={(e) => handleDeleteAlert(e, alert.id)}
+                onClick={(e) => handleDeleteAlert(e, alert._id)}
               >
                 <FontAwesomeIcon icon={faTrash} />
               </button>

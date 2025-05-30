@@ -4,7 +4,8 @@ import {
   Bell, 
   Home, 
   Cpu,
-  CalendarClock
+  CalendarClock,
+  Map
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen }) => {
@@ -12,10 +13,10 @@ export const Sidebar = ({ isOpen }) => {
   
   const menuItems = [
     { path: '/technicien', icon: <Home size={24} />, label: 'Tableau de bord' },
-    { path: '/technicien/sensors', icon: <Cpu size={24} />, label: 'Capteurs' },
     { path: '/technicien/alerts', icon: <Bell size={24} />, label: 'Alertes' },
    
     { path: '/technicien/maintenance', icon: <CalendarClock size={24} />, label: 'Maintenance' },
+    // {path: '/technicien/map', icon: <Map size={24} />, label: 'Map'}
   ];
 
   return (
@@ -78,19 +79,7 @@ export const Sidebar = ({ isOpen }) => {
         </ul>
       </nav>
 
-      <div className="absolute bottom-0 w-full border-t border-[rgba(255,255,255,0.05)] p-4">
-        <div className={`flex items-center ${!isOpen && 'justify-center'}`}>
-          <div className="h-9 w-9 rounded-full bg-[rgba(255,255,255,0.1)] flex items-center justify-center text-[#0070d8] font-semibold text-sm">
-            <span>TT</span>
-          </div>
-          {isOpen && (
-            <div className="ml-3 transition-opacity duration-300 whitespace-nowrap">
-              <p className="text-sm font-semibold text-white">Tech Technicien</p>
-              <p className="text-xs text-[#a9b8d5]">Technicien</p>
-            </div>
-          )}
-        </div>
-      </div>
+      
     </aside>
   );
 };
