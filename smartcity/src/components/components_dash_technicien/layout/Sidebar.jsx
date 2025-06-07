@@ -3,9 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Bell, 
   Home, 
-  Cpu,
+
   CalendarClock,
-  Map
+
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen }) => {
@@ -16,7 +16,7 @@ export const Sidebar = ({ isOpen }) => {
     { path: '/technicien/alerts', icon: <Bell size={24} />, label: 'Alertes' },
    
     { path: '/technicien/maintenance', icon: <CalendarClock size={24} />, label: 'Maintenance' },
-    // {path: '/technicien/map', icon: <Map size={24} />, label: 'Map'}
+
   ];
 
   return (

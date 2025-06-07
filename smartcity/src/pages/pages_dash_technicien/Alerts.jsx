@@ -119,7 +119,7 @@ const Alerts = () => {
               <CardDescription>Gérez et répondez aux alertes du système</CardDescription>
             </div>
             
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -134,7 +134,7 @@ const Alerts = () => {
               <Button variant="outline" size="icon">
                 <Filter className="h-4 w-4" />
               </Button>
-            </div>
+            </div> */}
           </div>
         </CardHeader>
         
