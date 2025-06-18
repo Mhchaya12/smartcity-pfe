@@ -45,7 +45,7 @@ const io = initializeSocketIO(httpServer);
 // Update data every 10 seconds
 setInterval(() => {
   insertData(io);
-}, 50000);
+}, 10000);
 
 // Routes
 app.use('/api/users', userRouter);

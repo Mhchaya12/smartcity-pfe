@@ -205,11 +205,11 @@ const PerformanceReportsPage = ({ energie, dechets, transport, securite }) => {
           ...prev,
           sensorData: [...prev.sensorData, {
             type: 'Déchets',
-            value: data.value || Math.floor(Math.random() * 100),
-            location: data.location || 'Zone de Collecte',
+            value: data.pourcentage ?? Math.floor(Math.random() * 100),
+            location: data.localisation || 'Zone de Collecte',
             timestamp: new Date().toISOString(),
             metrics: {
-              'Niveau de Remplissage': data.value || Math.floor(Math.random() * 100),
+              'Niveau de Remplissage': data.pourcentage ?? Math.floor(Math.random() * 100),
               'Taux de Recyclage': Math.floor(Math.random() * 100)
             }
           }]
@@ -218,17 +218,17 @@ const PerformanceReportsPage = ({ energie, dechets, transport, securite }) => {
     };
 
     // S'abonner aux événements
+    socketService.subscribeToSensorUpdates('SensorDechet', handleDechetUpdate);
     socketService.subscribeToSensorUpdates('Securite', handleSecuriteUpdate);
     socketService.subscribeToSensorUpdates('Transport', handleTransportUpdate);
     socketService.subscribeToSensorUpdates('Energie', handleEnergieUpdate);
-    socketService.subscribeToSensorUpdates('Dechet', handleDechetUpdate);
 
     // Nettoyage lors du démontage du composant
     return () => {
+      socketService.unsubscribeFromSensorUpdates('SensorDechet', handleDechetUpdate);
       socketService.unsubscribeFromSensorUpdates('Securite', handleSecuriteUpdate);
       socketService.unsubscribeFromSensorUpdates('Transport', handleTransportUpdate);
       socketService.unsubscribeFromSensorUpdates('Energie', handleEnergieUpdate);
-      socketService.unsubscribeFromSensorUpdates('Dechet', handleDechetUpdate);
       socketService.disconnect();
     };
   }, [reportForm.sensorTypes]);
