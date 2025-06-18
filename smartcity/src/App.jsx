@@ -9,7 +9,6 @@ import Index from './pages/pages_dash_technicien/Index';
 import Alerts from './pages/pages_dash_technicien/Alerts';
 import Maintenance from './pages/pages_dash_technicien/Maintenance';
 import NotFound from './pages/pages_dash_technicien/NotFound';
-// import LeafletMapComponent from './pages/pages_dash_technicien/map';
 import Dashboard from './pages/pages_dash_admin/Dashboard';
 import Alertsad from './pages/pages_dash_admin/Alerts_ad';
 import Users from './pages/pages_dash_admin/Users';
